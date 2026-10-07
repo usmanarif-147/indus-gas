@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Indus Gas",
   description: "Reliable LPG distribution for businesses.",
   applicationName: "Indus Gas",
-  icons: { icon: "/icon-192.svg", apple: "/icon-192.svg" }
+  icons: { icon: "/api/pwa-icon/192", apple: "/api/pwa-icon/192" }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
