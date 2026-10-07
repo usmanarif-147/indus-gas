@@ -1,0 +1,2 @@
+import { EmptyState, PageTitle } from "@/components/admin-ui";
+export default function ExpensesPage() { return <><PageTitle eyebrow="MONEY OUT" title="Expenses" description="Review daily expenses submitted by employees." action={<button className="admin-button">+ Add expense</button>} /><section className="expense-type-list"><span>🔥 Filling charges</span><span>🚧 Society entry fee</span><span>📄 Photo copy</span><span>⛽ Vehicle fuel</span></section><EmptyState icon="₨" title="No expenses yet" text="Employee expense submissions will appear here for review." /></>; }

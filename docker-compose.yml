@@ -15,7 +15,21 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
+
+  migrate:
+    image: postgres:17-alpine
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-indus_gas}:${POSTGRES_PASSWORD:-replace-with-a-long-random-password}@db:5432/${POSTGRES_DB:-indus_gas}
+    volumes:
+      - ./database/migrations:/migrations:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["/bin/sh", "-ec", "for file in /migrations/*.sql; do psql \"$$DATABASE_URL\" -v ON_ERROR_STOP=1 -f \"$$file\"; done"]
+    restart: "no"
 
   db:
     image: postgres:17-alpine

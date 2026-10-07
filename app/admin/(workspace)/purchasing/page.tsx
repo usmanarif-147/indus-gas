@@ -1,0 +1,2 @@
+import { EmptyState, PageTitle } from "@/components/admin-ui";
+export default function PurchasingPage() { return <><PageTitle eyebrow="PURCHASING" title="Purchasing" description="Wholesale purchases and supplier records will be managed here." /><EmptyState icon="▣" title="Purchasing coming soon" text="This section will be added after leads, clients, deliveries, and expenses are connected." /></>; }
