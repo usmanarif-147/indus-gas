@@ -1,5 +1,4 @@
-import Link from "next/link";
-
-export default function FieldPage() {
-  return <main className="field"><p className="field-brand">INDUS<span>GAS</span></p><p className="eyebrow">EMPLOYEE APP</p><h1>Choose your role</h1><p className="muted">Select the role assigned to you.</p><div className="role-grid"><Link className="role" href="/field/driver"><strong>Driver</strong><span>Continue to options</span></Link><Link className="role" href="/field/helper"><strong>Helper</strong><span>Continue to options</span></Link><Link className="role" href="/field/salesman"><strong>Salesman</strong><span>Continue to options</span></Link></div></main>;
-}
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+export default function FieldLoginPage() { const router = useRouter(); const [error, setError] = useState(""); function login(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); if (!String(form.get("name") ?? "").trim() || !String(form.get("password") ?? "").trim()) { setError("Please enter your name and password."); return; } router.push("/field/roles"); } return <main className="field-shell"><section className="login-card"><div className="app-mark">IG</div><p className="field-brand">INDUS<span>GAS</span></p><h1>Employee App</h1><p className="muted">Enter your details to continue.</p><form className="simple-form" onSubmit={login}><label>Your name<input name="name" autoComplete="name" placeholder="Enter your name" /></label><label>Password<input name="password" type="password" autoComplete="current-password" placeholder="Enter password" /></label>{error && <p className="form-error">{error}</p>}<button className="button form-button" type="submit">Continue →</button></form><p className="login-note">For MVP testing, any non-empty name and password will work.</p></section></main>; }
