@@ -36,5 +36,5 @@ export default function FieldSetupPage() {
     setMessage(choice.outcome === "accepted" ? "Indus Gas has been installed. Open it from your home screen." : "Installation cancelled. You can try again from the Chrome menu.");
   };
 
-  return <main className="setup"><section className="setup-card"><div className="setup-icon">IG</div><p className="eyebrow">INDUS GAS</p><h1>Employee App</h1><p className="muted">Install this app once. After that, open Indus Gas from the app icon on this phone.</p><button className="button install" onClick={install} disabled={!installPrompt}>{installPrompt ? "Install Indus Gas" : "Install from Chrome menu"}</button><p className="setup-help">{message}</p><p className="setup-help">After installation, sign in and select your role.</p></section></main>;
+  return <main className="setup"><section className="setup-card"><div className="setup-icon">IG</div><p className="eyebrow">INDUS GAS</p><h1>Employee App</h1><p className="muted">Install this app once. After that, open Indus Gas from the app icon on this phone.</p><button className="button install" onClick={install} disabled={!installPrompt}>{installPrompt ? "Install Indus Gas" : "Install from Chrome menu"}</button><p className="setup-help">{message}</p><p className="setup-help">After installation, sign in. Your work options will appear automatically.</p></section></main>;
 }
