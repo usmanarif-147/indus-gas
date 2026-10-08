@@ -11,22 +11,19 @@ const deliveries = [
 export default function DeliveriesPage() {
   return <main className="field-shell"><section className="field-page">
     <Link href="/field/home" className="back">← Back to home</Link>
-    <span className="page-icon text-icon">▣</span>
-    <p className="eyebrow">DELIVERY BOY · TODAY</p>
-    <h1>Deliveries</h1>
     <div className="date-pill">09-10-2026</div>
+    <h1>Deliveries</h1>
     <div className="delivery-stats" aria-label="Delivery status summary">
       <div className="stat-total"><span>Total</span><strong>5</strong></div>
       <div className="stat-completed"><span>Completed</span><strong>0</strong></div>
       <div className="stat-pending"><span>Pending</span><strong>5</strong></div>
     </div>
-    <p className="muted">Open a restaurant and press the Record Delivery button after delivery.</p>
     <div className="delivery-list">{deliveries.map((item) => <article key={item.id} className="delivery-card">
       <Link className="delivery-main" href={`/field/deliveries/${item.id}`}>
         <span className="delivery-number">{item.id}</span>
         <div className="delivery-info">
           <div className="delivery-title"><strong>{item.title}</strong><span className="area-tag">📍 {item.area}</span></div>
-          <div className="cylinder-tags">{item.cylinders.map((cylinder) => <span key={cylinder.size} className={`cylinder-tag ${cylinder.size === "45.4 kg" ? "cylinder-45" : "cylinder-11"}`}><b>{cylinder.count} cylinders</b><small>{cylinder.size} LOT</small></span>)}</div>
+          <div className="cylinder-tags">{item.cylinders.map((cylinder) => <span key={cylinder.size} className={`cylinder-tag ${cylinder.size === "45.4 kg" ? "cylinder-45" : "cylinder-11"}`}><b>{cylinder.count} cylinders</b><small>{cylinder.size}</small></span>)}</div>
           <span className="receiver">☎ <b>{item.receiver}</b> · {item.contact}</span>
         </div>
         <span className="record-button">Record delivery <span>→</span></span>
