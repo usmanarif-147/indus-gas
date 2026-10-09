@@ -9,6 +9,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-indus_gas}:${POSTGRES_PASSWORD:-replace-with-a-long-random-password}@db:5432/${POSTGRES_DB:-indus_gas}
       WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_GEOCODING_API_KEY: ${GOOGLE_GEOCODING_API_KEY:-}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

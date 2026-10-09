@@ -28,6 +28,8 @@ const homeContent = {
       { href: "/field/report", icon: "▦", title: "Report", detail: "Coming soon" },
       { href: "/field/expenses", icon: "₨", title: "Expense Tracker", detail: "Add daily expense" },
       { href: "/field/clients", icon: "♙", title: "Clients", detail: "Coming soon" },
+      { href: "/field/visits", icon: "◌", title: "Visits", detail: "Coming soon" },
+      { href: "/field/filling", icon: "◒", title: "Filling", detail: "Coming soon" },
     ],
   },
 } as const;
