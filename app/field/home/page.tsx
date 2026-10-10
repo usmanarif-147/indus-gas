@@ -11,14 +11,14 @@ const homeContent = {
     greeting: "Your work",
     options: [
       { href: "/field/leads", icon: "◌", title: "Leads", detail: "New restaurant meetings" },
-      { href: "/field/plan", icon: "▤", title: "Plan", detail: "Today's planned visits", count: "0" },
+      { href: "/field/plan", icon: "▤", title: "Plan", detail: "Today's planned visits", count: "0", countText: "planned visits" },
       { href: "/field/expenses", icon: "₨", title: "Expense Tracker", detail: "Add daily expense" },
     ],
   },
   delivery_boy: {
     greeting: "Your work",
     options: [
-      { href: "/field/deliveries", icon: "▣", title: "Deliveries", detail: "Today's deliveries", count: "5" },
+      { href: "/field/deliveries", icon: "▣", title: "Today’s Plan", detail: "Deliveries and plant filling" },
       { href: "/field/expenses", icon: "₨", title: "Expense Tracker", detail: "Add daily expense" },
     ],
   },
@@ -29,7 +29,7 @@ const homeContent = {
       { href: "/field/expenses", icon: "₨", title: "Expense Tracker", detail: "Add daily expense" },
       { href: "/field/clients", icon: "♙", title: "Clients", detail: "Coming soon" },
       { href: "/field/visits", icon: "◌", title: "Visits", detail: "Coming soon" },
-      { href: "/field/filling", icon: "◒", title: "Filling", detail: "Coming soon" },
+      { href: "/field/filling", icon: "◒", title: "Plant & Purchasing", detail: "Rates and filling plans" },
     ],
   },
 } as const;
@@ -52,7 +52,7 @@ export default function FieldHomePage() {
     <header className="field-home-header"><div><p className="field-brand">INDUS<span>GAS</span></p><h1>{content.greeting}</h1></div><button onClick={logout} aria-label="Log out">↗</button></header>
     <p className="muted">Hello {user.name}. Choose one option.</p>
     <div className="large-tile-grid">{content.options.map((item) => <Link key={item.href} className={`large-tile ${"count" in item ? "has-tile-count" : ""}`} href={item.href}>
-      {"count" in item && <span className="home-tile-count"><b>{item.count}</b> {item.title === "Plan" ? "planned visits" : "total deliveries"}</span>}
+      {"count" in item && <span className="home-tile-count"><b>{item.count}</b> {item.countText}</span>}
       <span className="tile-icon text-icon">{item.icon}</span>
       <strong>{item.title}</strong>
       <small>{item.detail}</small>
