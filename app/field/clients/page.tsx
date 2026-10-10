@@ -12,7 +12,7 @@ export default function ClientsPage() {
   return <main className="field-shell"><section className="field-page">
     <Link href="/field/home" className="back">← Back to home</Link>
     <p className="eyebrow">ADMIN · CLIENTS</p>
-    <h1>Clients</h1>
+    <div className="clients-header"><h1>Clients</h1><Link href="/field/clients/add" className="button add-client-button">+ Add client</Link></div>
     <p className="muted">Closing balance shows how many company cylinders are currently with each client.</p>
     <div className="client-list">{clients.map((client) => <article key={client.id} className="client-card">
       <span className="client-number">{client.id}</span>
