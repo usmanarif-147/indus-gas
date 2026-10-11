@@ -1189,6 +1189,32 @@ legend {
 .clients-header h1 {
   margin: 10px 0 12px;
 }
+.client-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.add-order-button,
+.secondary-link-button {
+  margin: 0;
+  padding: 11px 13px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.secondary-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--green-dark);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
 .add-client-button {
   flex: 0 0 auto;
   margin: 0;
@@ -1306,4 +1332,296 @@ legend {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.planning-notice {
+  margin: 18px 0 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #e3f5e9;
+  color: #13733d;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 12px;
+}
+.calendar-legend span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.legend-delivery,
+.fc .calendar-delivery {
+  background: #dcecfb !important;
+  color: #18598c !important;
+}
+.legend-filling,
+.fc .calendar-filling {
+  background: #e0f4e7 !important;
+  color: #13733d !important;
+}
+.legend-task,
+.fc .calendar-task {
+  background: #fff0d8 !important;
+  color: #9c5900 !important;
+}
+.planning-calendar {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+.fc {
+  padding: 12px;
+  font-family: inherit;
+}
+.fc .fc-toolbar-title {
+  font-size: 19px;
+  color: var(--dark);
+}
+.fc .fc-button-primary {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--green-dark);
+  box-shadow: none;
+}
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:focus {
+  border-color: var(--green);
+  background: #f5fbf8;
+  color: var(--green-dark);
+  box-shadow: none;
+}
+.fc .fc-col-header-cell-cushion {
+  padding: 8px 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-decoration: none;
+}
+.fc .fc-daygrid-day-number {
+  padding: 7px;
+  color: var(--dark);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.fc .fc-daygrid-day-frame {
+  min-height: 82px;
+}
+.fc .fc-daygrid-day:hover {
+  background: #f5fbf8;
+  cursor: pointer;
+}
+.fc .fc-event {
+  margin: 2px 3px;
+  border: 0;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.fc .fc-event-main {
+  padding: 2px 3px;
+}
+.planning-modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 16px;
+  background: #10271fb8;
+}
+.planning-modal {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 26px 20px 20px;
+  border-radius: 20px;
+  background: #f7fbf9;
+}
+.planning-modal h2 {
+  margin: 5px 0 8px;
+  font-size: 26px;
+}
+.planning-modal > .muted {
+  margin: 0;
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #e5f3ed;
+  color: var(--green-dark);
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+.plan-type-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+.plan-type-options button {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--dark);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.plan-type-options button:hover {
+  border-color: var(--green);
+  background: #f5fbf8;
+}
+.plan-type-options strong {
+  font-size: 17px;
+}
+.plan-type-options span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.planning-form {
+  margin-top: 18px;
+}
+.planning-form label {
+  gap: 10px;
+}
+.planning-form .tag-field {
+  gap: 0;
+}
+.planning-form .tag-field legend {
+  display: block;
+  width: 100%;
+  margin: 0 0 7px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.planning-form .form-tag {
+  font-size: 13px;
+  font-weight: 500;
+}
+.planning-form .form-tag.selected {
+  font-weight: 700;
+}
+.planning-form .required-star {
+  display: inline-block;
+  margin-left: 4px;
+  color: #b42318;
+  font-weight: 900;
+}
+.back-form-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+@media (max-width: 430px) {
+  .fc {
+    padding: 8px 4px;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 16px;
+  }
+  .fc .fc-daygrid-day-frame {
+    min-height: 67px;
+  }
+  .fc .fc-event {
+    font-size: 9px;
+  }
+}
+.form-intro {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.delivery-order-form label {
+  gap: 10px;
+}
+.delivery-order-form .input-label {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 700;
+}
+.delivery-order-form .required-star {
+  display: inline-block;
+  margin-left: 4px;
+  color: #b42318;
+  font-weight: 900;
+}
+.order-section {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+}
+.order-section h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.order-section .muted {
+  margin: -8px 0 0;
+}
+.delivery-order-form .tag-field {
+  gap: 0;
+}
+.delivery-order-form .tag-field legend {
+  display: block;
+  width: 100%;
+  margin: 0 0 7px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.delivery-order-form .form-tag {
+  font-size: 13px;
+  font-weight: 500;
+}
+.delivery-order-form .form-tag.selected {
+  font-weight: 700;
+}
+.cylinder-quantity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cylinder-quantity-grid label {
+  font-size: 14px;
+}
+.cylinder-quantity-grid label > span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (max-width: 470px) {
+  .clients-header {
+    align-items: flex-start;
+  }
+  .client-actions {
+    max-width: 176px;
+  }
+  .cylinder-quantity-grid {
+    grid-template-columns: 1fr;
+  }
 }

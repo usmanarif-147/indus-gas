@@ -27,7 +27,8 @@ const homeContent = {
     options: [
       { href: "/field/report", icon: "▦", title: "Report", detail: "Coming soon" },
       { href: "/field/expenses", icon: "₨", title: "Expense Tracker", detail: "Add daily expense" },
-      { href: "/field/clients", icon: "♙", title: "Clients", detail: "Coming soon" },
+      { href: "/field/clients", icon: "♙", title: "Clients", detail: "Client records and balances" },
+      { href: "/field/planning", icon: "▦", title: "Planning", detail: "Calendar for delivery and filling plans" },
       { href: "/field/visits", icon: "◌", title: "Visits", detail: "Coming soon" },
       { href: "/field/filling", icon: "◒", title: "Plant & Purchasing", detail: "Rates and filling plans" },
     ],
