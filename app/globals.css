@@ -1357,18 +1357,18 @@ legend {
 }
 .legend-delivery,
 .fc .calendar-delivery {
-  background: #dcecfb !important;
-  color: #18598c !important;
+  background: #18598c !important;
+  color: #fff !important;
 }
 .legend-filling,
 .fc .calendar-filling {
-  background: #e0f4e7 !important;
-  color: #13733d !important;
+  background: #13733d !important;
+  color: #fff !important;
 }
 .legend-task,
 .fc .calendar-task {
-  background: #fff0d8 !important;
-  color: #9c5900 !important;
+  background: #9c5900 !important;
+  color: #fff !important;
 }
 .planning-calendar {
   overflow: hidden;
@@ -1426,6 +1426,17 @@ legend {
 }
 .fc .fc-event-main {
   padding: 2px 3px;
+}
+.fc .calendar-past-day {
+  background: #f4f5f5;
+}
+.fc .calendar-past-day .fc-daygrid-day-number {
+  color: #9aa5a0;
+}
+.fc .calendar-past-day,
+.fc .calendar-past-day:hover {
+  background: #f4f5f5;
+  cursor: not-allowed;
 }
 .planning-modal-backdrop {
   position: fixed;
@@ -1495,6 +1506,35 @@ legend {
 .plan-type-options span {
   color: var(--text-muted);
   font-size: 13px;
+}
+.planned-counts {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.planned-counts > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #e5f3ed;
+  color: var(--green-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+.planned-counts button {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border: 1px solid #b42318;
+  border-radius: 7px;
+  background: #fff;
+  color: #b42318;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
 }
 .planning-form {
   margin-top: 18px;

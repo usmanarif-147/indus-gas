@@ -16,6 +16,11 @@ const planLabels: Record<PlanType, string> = { delivery: "Delivery plan", fillin
 function readableDate(value: string) {
   return new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00`));
 }
+function localDate(value: Date) {
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${value.getFullYear()}-${month}-${day}`;
+}
 
 export default function PlanningPage() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -28,12 +33,22 @@ export default function PlanningPage() {
   const [domestic, setDomestic] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [error, setError] = useState("");
+  const today = localDate(new Date());
 
   const events = useMemo(() => Object.entries(counts).flatMap(([date, day]) => (Object.entries(day) as [PlanType, number][]).filter(([, count]) => count > 0).map(([type, count]) => ({ id: `${date}-${type}`, start: date, title: `${count} ${type === "delivery" ? "delivery" : type === "filling" ? "filling" : "task"}${count === 1 ? "" : "s"}`, classNames: [`calendar-${type}`] }))), [counts]);
 
   function openPlans(date: string) { setSelectedDate(date); setActivePlan(null); setNotice(""); setError(""); }
-  function dateClick(arg: DateClickArg) { openPlans(arg.dateStr); }
+  function dateClick(arg: DateClickArg) { if (arg.dateStr >= today) openPlans(arg.dateStr); }
   function closeModal() { setSelectedDate(""); setActivePlan(null); setError(""); }
+  function removePlan(type: PlanType) {
+    setCounts((current) => {
+      const currentDay = current[selectedDate];
+      if (!currentDay || currentDay[type] === 0) return current;
+      const nextDay = { ...currentDay, [type]: currentDay[type] - 1 };
+      return { ...current, [selectedDate]: nextDay };
+    });
+    setNotice(`One ${planLabels[type].toLowerCase()} removed from ${readableDate(selectedDate)}. This is a UI-only preview.`);
+  }
   function savePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const needsCylinders = activePlan === "delivery" || activePlan === "filling";
@@ -57,11 +72,11 @@ export default function PlanningPage() {
     <p className="muted">Tap a date to add a delivery, filling, or personal task plan.</p>
     {notice && <p className="planning-notice">{notice}</p>}
     <div className="calendar-legend"><span className="legend-delivery">Delivery</span><span className="legend-filling">Filling</span><span className="legend-task">My task</span></div>
-    <div className="planning-calendar"><FullCalendar plugins={[dayGridPlugin, interactionPlugin]} initialView="dayGridMonth" initialDate="2026-10-01" fixedWeekCount={false} headerToolbar={{ left: "prev,next", center: "title", right: "" }} dayMaxEvents={3} events={events} dateClick={dateClick} /></div>
+    <div className="planning-calendar"><FullCalendar plugins={[dayGridPlugin, interactionPlugin]} initialView="dayGridMonth" initialDate="2026-10-01" fixedWeekCount={false} headerToolbar={{ left: "prev,next", center: "title", right: "" }} dayMaxEvents={3} events={events} dateClick={dateClick} dayCellClassNames={(arg) => localDate(arg.date) < today ? ["calendar-past-day"] : []} /></div>
     {selectedDate && <div className="planning-modal-backdrop" role="presentation" onMouseDown={closeModal}><section className="planning-modal" role="dialog" aria-modal="true" aria-labelledby="planning-modal-title" onMouseDown={(event) => event.stopPropagation()}>
       <button type="button" className="modal-close" onClick={closeModal} aria-label="Close">×</button>
       <p className="eyebrow">{readableDate(selectedDate)}</p>
-      {!activePlan ? <><h2 id="planning-modal-title">Add a plan</h2><p className="muted">Choose what you want to plan for this date.</p><div className="plan-type-options">{(Object.keys(planLabels) as PlanType[]).map((type) => <button type="button" key={type} onClick={() => { setActivePlan(type); setError(""); }}><strong>{planLabels[type]}</strong><span>{type === "delivery" ? "Client cylinder order" : type === "filling" ? "LPG plant visit" : "Your own reminder"}</span></button>)}</div></> : <form className="simple-form planning-form" onSubmit={savePlan}><button type="button" className="back-form-button" onClick={() => { setActivePlan(null); setError(""); }}>← Change plan type</button><h2 id="planning-modal-title">{planLabels[activePlan]}</h2>{error && <p className="form-error">{error}</p>}
+      {!activePlan ? <><h2 id="planning-modal-title">Plans for this date</h2>{counts[selectedDate] && <section className="planned-counts" aria-label="Plans already added">{(Object.keys(planLabels) as PlanType[]).filter((type) => counts[selectedDate][type] > 0).map((type) => <div key={type}><span>{counts[selectedDate][type]} {planLabels[type]}{counts[selectedDate][type] === 1 ? "" : "s"}</span><button type="button" onClick={() => removePlan(type)}>Remove 1</button></div>)}</section>}<p className="muted">Choose another plan to add for this date.</p><div className="plan-type-options">{(Object.keys(planLabels) as PlanType[]).map((type) => <button type="button" key={type} onClick={() => { setActivePlan(type); setError(""); }}><strong>{planLabels[type]}</strong><span>{type === "delivery" ? "Client cylinder order" : type === "filling" ? "LPG plant visit" : "Your own reminder"}</span></button>)}</div></> : <form className="simple-form planning-form" onSubmit={savePlan}><button type="button" className="back-form-button" onClick={() => { setActivePlan(null); setError(""); }}>← Change plan type</button><h2 id="planning-modal-title">{planLabels[activePlan]}</h2>{error && <p className="form-error">{error}</p>}
         {activePlan === "delivery" && <label>Client<span className="required-star" aria-label="required">*</span><select value={client} onChange={(event) => setClient(event.target.value)}><option value="">Select client</option>{clients.map((name) => <option value={name} key={name}>{name}</option>)}</select></label>}
         {activePlan !== "task" && <><fieldset className="tag-field"><legend>Preferred time<span className="required-star" aria-label="required">*</span></legend><div className="tag-list">{timeOptions.map((option) => <button type="button" key={option} className={`form-tag ${time === option ? "selected" : ""}`} onClick={() => setTime(option)}>{option}</button>)}</div></fieldset><div className="cylinder-quantity-grid"><label>Commercial <span>(45.4 kg)</span><input type="number" min="0" inputMode="numeric" value={commercial} onChange={(event) => setCommercial(event.target.value)} placeholder="0" /></label><label>Domestic <span>(11.8 kg)</span><input type="number" min="0" inputMode="numeric" value={domestic} onChange={(event) => setDomestic(event.target.value)} placeholder="0" /></label></div></>}
         {activePlan === "task" && <label>Task title<span className="required-star" aria-label="required">*</span><input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="e.g. Call plant manager" /></label>}
