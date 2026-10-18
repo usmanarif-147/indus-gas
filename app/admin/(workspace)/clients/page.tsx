@@ -1,2 +1,4 @@
-import { EmptyState, PageTitle } from "@/components/admin-ui";
-export default function ClientsPage() { return <><PageTitle eyebrow="ACTIVE CUSTOMERS" title="Clients" description="Clients are created after a working lead places its first confirmed order." action={<button className="admin-button">+ Add client</button>} /><section className="filter-row"><input placeholder="Search client, branch, or area" /><button>All branches ▾</button></section><EmptyState icon="♙" title="No active clients yet" text="A working lead will move here when a salesman records its first order." /></>; }
+import { PageTitle } from "@/components/admin-ui";
+import AdminClientsManager from "@/components/admin-clients-manager";
+
+export default function ClientsPage() { return <><PageTitle eyebrow="CLIENT MANAGEMENT" title="Clients" description="Create confirmed clients, manage their branches, and keep client details accurate." /><AdminClientsManager /></>; }
