@@ -11,7 +11,8 @@ const menu = [
   ["/admin/employees", "♧", "Employees"],
   ["/admin/purchasing", "▣", "Purchasing"],
   ["/admin/reminder", "◷", "Reminder"],
-  ["/admin/expenses", "₨", "Expenses"]
+  ["/admin/expenses", "₨", "Expenses"],
+  ["/admin/settings", "⚙", "Settings"]
 ] as const;
 
 export default function AdminShell({ children, username }: { children: ReactNode; username: string }) {
