@@ -1,1 +1,290 @@
-.settings{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px}.settingsNav,.settingsContent{border:1px solid #272431;border-radius:12px;background:#121018}.settingsNav{align-self:start;padding:10px;display:grid;gap:5px}.settingsNav button{border:0;border-radius:8px;background:transparent;color:#c4bdcf;padding:13px;text-align:left;display:flex;gap:12px;align-items:center;cursor:pointer}.settingsNav button:hover,.settingsNav .activeTab{background:#32104d;color:#e3b4ff}.settingsNav button>span{display:grid;place-items:center;width:25px;font-size:17px}.settingsNav button div{display:grid;gap:3px}.settingsNav button b{font-size:13px}.settingsNav button small{font-size:11px;color:#8f889c}.settingsContent{min-height:470px;padding:26px}.section{display:grid;gap:20px}.sectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.sectionHead h2{margin:0;font-size:21px}.sectionHead p{margin:7px 0 0;color:#aaa3b3;font-size:14px;line-height:1.45}.localBadge{flex:none;border-radius:999px;background:#2a2035;color:#d5a7f6;padding:6px 9px;font-size:11px;font-weight:800}.notice,.passwordMessage{margin:0;border-radius:8px;padding:11px 13px;background:#143d29;color:#9aeabc;font-size:13px;font-weight:700}.categoryLayout{display:grid;grid-template-columns:235px minmax(0,1fr);border:1px solid #302d38;border-radius:10px;overflow:hidden;min-height:360px}.categoryList{background:#0f0e14;padding:13px;display:grid;align-content:start;gap:6px}.categoryListHead{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 10px;color:#aaa3b3;font-size:12px;text-transform:uppercase;letter-spacing:.6px}.categoryListHead span,.subcategoryHead>span{border-radius:999px;background:#282330;color:#cfc5dc;padding:3px 7px;font-size:11px}.categoryList>button{width:100%;border:0;border-radius:8px;background:transparent;color:#cfc7da;padding:10px;text-align:left;display:flex;align-items:center;gap:9px;cursor:pointer}.categoryList>button:hover,.categoryList .selectedCategory{background:#35104f;color:#f1d9ff}.categoryList>button>span{display:grid;place-items:center;width:27px;height:27px;border-radius:7px;background:#292332;color:#c88aff;font-size:12px;font-weight:900}.categoryList button div{display:grid;gap:3px}.categoryList button b{font-size:13px}.categoryList button small{font-size:11px;color:#9e96aa}.addLine{display:flex;gap:6px;margin-top:9px;border-top:1px solid #2b2733;padding-top:13px}.addLine input,.renameRow input,.subcategoryList input,.addSubcategory input,.fuelForm input,.fuelForm select,.passwordForm input{min-width:0;border:1px solid #393441;border-radius:7px;background:#0d0c11;color:#fff;padding:10px;font:inherit}.addLine input{width:100%;font-size:12px}.addLine button,.renameRow button,.subcategoryList button{border:0;border-radius:7px;background:#30243b;color:#ddaaff;padding:0 10px;font-size:12px;font-weight:800;cursor:pointer}.categoryDetails{padding:24px;display:grid;align-content:start;gap:20px}.detailTitle{display:flex;justify-content:space-between}.detailTitle span{color:#b467ff;font-size:10px;font-weight:800;letter-spacing:1px}.detailTitle h3{margin:6px 0 0;font-size:23px}.renameRow{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end}.renameRow label,.addSubcategory label,.fuelForm label,.passwordForm label{display:grid;gap:7px;color:#ded7e8;font-size:12px;font-weight:800}.renameRow button{height:40px}.subcategoryHead{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #302d38;padding-top:20px}.subcategoryHead h3{margin:0;font-size:16px}.subcategoryHead p{margin:4px 0 0;color:#98919f;font-size:12px}.subcategoryList{display:grid;gap:8px}.subcategoryList>div{display:grid;grid-template-columns:1fr auto;gap:8px}.subcategoryList input{height:39px}.subcategoryList button{height:39px}.empty{margin:0;color:#96909c;font-size:13px}.addSubcategory{display:grid;grid-template-columns:1fr auto;gap:10px;border-top:1px solid #302d38;padding-top:18px;align-items:end}.fuelForm{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}.fuelForm input,.fuelForm select{height:42px}.fuelForm button{height:42px;white-space:nowrap}.rateHint{display:grid;gap:5px;padding:15px;border:1px solid #3a2b46;border-radius:9px;background:#17121e;color:#aaa3b3;font-size:13px;line-height:1.45}.rateHint b{color:#d9b1f8}.rateTable{border:1px solid #302d38;border-radius:10px;overflow:hidden}.rateTable>div{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:14px 16px;border-bottom:1px solid #302d38;font-size:13px}.rateTable>div:last-child{border-bottom:0}.rateTableHead{background:#17141e;color:#9f97ad;font-size:11px!important;letter-spacing:.6px;text-transform:uppercase}.passwordForm{display:grid;gap:15px;max-width:470px}.passwordForm input{height:43px}.passwordForm small{color:#96909c;font-size:11px;font-weight:400}.passwordForm .admin-button{justify-self:start;margin-top:4px}.passwordMessage{background:#282330;color:#d9d2e5;font-weight:600;line-height:1.45}@media(max-width:850px){.settings{grid-template-columns:1fr}.settingsNav{grid-template-columns:repeat(3,1fr)}.settingsNav button{padding:11px}.settingsNav button>span{display:none}.categoryLayout{grid-template-columns:210px minmax(0,1fr)}.fuelForm{grid-template-columns:1fr 1fr}.fuelForm button{justify-self:start}}@media(max-width:580px){.settingsContent{padding:18px 14px}.settingsNav{grid-template-columns:1fr}.categoryLayout{grid-template-columns:1fr}.categoryList{border-bottom:1px solid #302d38}.categoryDetails{padding:18px 14px}.addSubcategory,.fuelForm{grid-template-columns:1fr}.addSubcategory .admin-button{justify-self:start}.sectionHead{flex-direction:column}.rateTable{overflow:auto}.rateTable>div{min-width:440px}.passwordForm .admin-button{width:100%}}
+.settings {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 22px;
+}
+.settingsNav,
+.settingsContent {
+  border: 1px solid #272431;
+  border-radius: 12px;
+  background: #121018;
+}
+.settingsNav {
+  align-self: start;
+  padding: 10px;
+  display: grid;
+  gap: 5px;
+}
+.settingsNav button {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c4bdcf;
+  padding: 13px;
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+}
+.settingsNav button:hover,
+.settingsNav .activeTab {
+  background: #32104d;
+  color: #e3b4ff;
+}
+.settingsNav button > span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  font-size: 17px;
+}
+.settingsNav button div {
+  display: grid;
+  gap: 3px;
+}
+.settingsNav button b {
+  font-size: 13px;
+}
+.settingsNav button small {
+  font-size: 11px;
+  color: #8f889c;
+}
+.settingsContent {
+  min-height: 470px;
+  padding: 26px;
+}
+.section {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+.sectionHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.sectionHead h2 {
+  margin: 0;
+  font-size: 21px;
+}
+.sectionHead p {
+  margin: 7px 0 0;
+  color: #aaa3b3;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.notice,
+.passwordMessage {
+  margin: 0;
+  border-radius: 8px;
+  padding: 11px 13px;
+  background: #143d29;
+  color: #9aeabc;
+  font-size: 13px;
+  font-weight: 700;
+}
+.tableWrap {
+  overflow: auto;
+  border: 1px solid #302d38;
+  border-radius: 10px;
+}
+.tableWrap table {
+  width: 100%;
+  min-width: 570px;
+  border-collapse: collapse;
+}
+.tableWrap th,
+.tableWrap td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #302d38;
+  text-align: left;
+  font-size: 13px;
+}
+.tableWrap th {
+  background: #17141e;
+  color: #9f97ad;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.tableWrap tr:last-child td {
+  border-bottom: 0;
+}
+.textButton {
+  border: 0;
+  background: transparent;
+  color: #d88aff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rateHint {
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+  border: 1px solid #3a2b46;
+  border-radius: 9px;
+  background: #17121e;
+  color: #aaa3b3;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.rateHint b {
+  color: #d9b1f8;
+}
+.modalBackdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #050409bf;
+}
+.modal {
+  position: relative;
+  width: min(100%, 470px);
+  padding: 26px;
+  border: 1px solid #49335b;
+  border-radius: 15px;
+  background: #17131f;
+}
+.close {
+  position: absolute;
+  right: 16px;
+  top: 13px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #2a2332;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+.modal > p {
+  margin: 0;
+  color: #b467ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.modal h2 {
+  margin: 6px 0 22px;
+  font-size: 22px;
+}
+.modal form {
+  display: grid;
+  gap: 14px;
+}
+.modalLabel,
+.passwordForm label {
+  display: grid;
+  gap: 7px;
+  color: #ded7e8;
+  font-size: 12px;
+  font-weight: 800;
+}
+.modalLabel input,
+.modalLabel select,
+.passwordForm input {
+  min-width: 0;
+  height: 43px;
+  border: 1px solid #393441;
+  border-radius: 7px;
+  background: #0d0c11;
+  color: #fff;
+  padding: 10px;
+  font: inherit;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+.modalActions > button {
+  border: 1px solid #3a3544;
+  border-radius: 7px;
+  background: #201d28;
+  color: #ddd6e8;
+  padding: 10px 13px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modalActions .admin-button {
+  border: 0;
+  color: #fff;
+}
+.passwordForm {
+  display: grid;
+  gap: 15px;
+  max-width: 470px;
+}
+.passwordForm small {
+  color: #96909c;
+  font-size: 11px;
+  font-weight: 400;
+}
+.passwordForm .admin-button {
+  justify-self: start;
+  margin-top: 4px;
+}
+.passwordMessage {
+  background: #282330;
+  color: #d9d2e5;
+  font-weight: 600;
+  line-height: 1.45;
+}
+@media (max-width: 850px) {
+  .settings {
+    grid-template-columns: 1fr;
+  }
+  .settingsNav {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .settingsNav button {
+    padding: 11px;
+  }
+  .settingsNav button > span {
+    display: none;
+  }
+}
+@media (max-width: 580px) {
+  .settingsContent {
+    padding: 18px 14px;
+  }
+  .settingsNav {
+    grid-template-columns: 1fr;
+  }
+  .sectionHead {
+    flex-direction: column;
+  }
+  .sectionHead .admin-button {
+    width: 100%;
+  }
+  .modal {
+    padding: 24px 18px;
+  }
+  .passwordForm .admin-button {
+    width: 100%;
+  }
+}
+.error {
+  margin: 0;
+  border-radius: 8px;
+  padding: 11px 13px;
+  background: #4a1f2a;
+  color: #ffb8c2;
+  font-size: 13px;
+  font-weight: 700;
+}
+.loading {
+  margin: 0;
+  color: #aaa3b3;
+  font-size: 14px;
+}
