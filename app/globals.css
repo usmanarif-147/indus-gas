@@ -431,6 +431,26 @@ legend {
   text-align: center;
   margin: 0 0 28px;
 }
+.pin-group {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.simple-form .pin-group input {
+  min-width: 0;
+  padding: 0;
+  text-align: center;
+  font-size: 25px;
+  font-weight: 700;
+}
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font: inherit;
+  font-weight: 700;
+  padding: 4px;
+}
 .app-mark {
   display: grid;
   place-items: center;
