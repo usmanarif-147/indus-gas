@@ -1,0 +1,6 @@
+"use client";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
+type Role = "admin" | "sales_manager" | "driver";
+const access: Record<Role, string[]> = { admin: ["/field/home", "/field/report", "/field/clients", "/field/planning", "/field/visits", "/field/filling"], sales_manager: ["/field/home", "/field/leads", "/field/plan", "/field/expenses"], driver: ["/field/home", "/field/deliveries", "/field/expenses"] };
+export default function FieldAccessGate({ children }: { children: ReactNode }) { const pathname = usePathname(); const router = useRouter(); const [allowed, setAllowed] = useState(false); useEffect(() => { setAllowed(false); if (pathname === "/field" || pathname === "/field/setup") { setAllowed(true); return; } fetch("/api/field/auth/me", { cache: "no-store" }).then(async (response) => { if (!response.ok) { router.replace("/field"); return; } const data = await response.json(); const role = data.user.role as Role; if (!access[role]?.some((route) => pathname === route || pathname.startsWith(`${route}/`))) { router.replace("/field/home"); return; } setAllowed(true); }).catch(() => router.replace("/field")); }, [pathname, router]); return allowed ? <>{children}</> : <main className="field-shell" />; }

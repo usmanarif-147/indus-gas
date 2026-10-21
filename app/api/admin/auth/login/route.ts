@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const password = typeof body?.password === "string" ? body.password : "";
   if (!username || !password) return NextResponse.json({ error: "Enter your username and password." }, { status: 400 });
 
-  const result = await pool.query<{ id: string; username: string; password: string }>("SELECT id, username, password FROM users WHERE username = $1 LIMIT 1", [username]);
+  const result = await pool.query<{ id: string; username: string; password: string }>("SELECT id, username, password FROM users WHERE username = $1 AND account_type = 'admin' AND is_active = 1 LIMIT 1", [username]);
   const user = result.rows[0];
   const passwordMatches = user ? await bcrypt.compare(password, user.password) : false;
   if (!user || !passwordMatches) return NextResponse.json({ error: "Invalid username or password." }, { status: 401 });
