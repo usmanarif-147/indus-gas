@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import styles from "./admin-settings-manager.module.css";
 
 type Category = { id: number; title: string };
@@ -9,13 +10,14 @@ type FuelRate = { id: number; date: string; type: string; rate: string };
 type Tab = "categories" | "subcategories" | "fuel" | "password";
 
 export default function AdminSettingsManager() {
-  const [tab, setTab] = useState<Tab>("categories"); const [categories, setCategories] = useState<Category[]>([]); const [subcategories, setSubcategories] = useState<Subcategory[]>([]); const [fuelRates, setFuelRates] = useState<FuelRate[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const router = useRouter(); const pathname = usePathname(); const searchParams = useSearchParams(); const tabFromUrl = searchParams.get("tab"); const tab: Tab = tabFromUrl === "subcategories" || tabFromUrl === "fuel" || tabFromUrl === "password" ? tabFromUrl : "categories"; const [categories, setCategories] = useState<Category[]>([]); const [subcategories, setSubcategories] = useState<Subcategory[]>([]); const [fuelRates, setFuelRates] = useState<FuelRate[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
   async function load() { setLoading(true); setError(""); try { const response = await fetch("/api/admin/settings", { cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load settings."); setCategories(data.categories); setSubcategories(data.subcategories); setFuelRates(data.fuelRates); } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to load settings."); } finally { setLoading(false); } }
   useEffect(() => { void load(); }, []);
   const tabs: { id: Tab; icon: string; title: string; detail: string }[] = [
     { id: "categories", icon: "▦", title: "Categories", detail: "Expense main groups" }, { id: "subcategories", icon: "≡", title: "Subcategories", detail: "Linked expense options" }, { id: "fuel", icon: "⛽", title: "Fuel rate", detail: "Daily rate per litre" }, { id: "password", icon: "🔒", title: "Change password", detail: "Secure admin access" },
   ];
-  return <div className={styles.settings}><aside className={styles.settingsNav}>{tabs.map((item) => <button key={item.id} className={tab === item.id ? styles.activeTab : ""} onClick={() => setTab(item.id)}><span>{item.icon}</span><div><b>{item.title}</b><small>{item.detail}</small></div></button>)}</aside><section className={styles.settingsContent}>{error && <p className={styles.error}>{error}</p>}{loading ? <p className={styles.loading}>Loading settings…</p> : <>{tab === "categories" && <Categories categories={categories} subcategories={subcategories} onChange={setCategories} />}{tab === "subcategories" && <Subcategories categories={categories} subcategories={subcategories} onChange={setSubcategories} />}{tab === "fuel" && <FuelRates entries={fuelRates} onChange={setFuelRates} />}{tab === "password" && <PasswordSettings />}</>}</section></div>;
+  function changeTab(next: Tab) { router.replace(next === "categories" ? pathname : `${pathname}?tab=${next}`, { scroll: false }); }
+  return <div className={styles.settings}><aside className={styles.settingsNav}>{tabs.map((item) => <button key={item.id} className={tab === item.id ? styles.activeTab : ""} onClick={() => changeTab(item.id)}><span>{item.icon}</span><div><b>{item.title}</b><small>{item.detail}</small></div></button>)}</aside><section className={styles.settingsContent}>{error && <p className={styles.error}>{error}</p>}{loading ? <p className={styles.loading}>Loading settings…</p> : <>{tab === "categories" && <Categories categories={categories} subcategories={subcategories} onChange={setCategories} />}{tab === "subcategories" && <Subcategories categories={categories} subcategories={subcategories} onChange={setSubcategories} />}{tab === "fuel" && <FuelRates entries={fuelRates} onChange={setFuelRates} />}{tab === "password" && <PasswordSettings />}</>}</section></div>;
 }
 
 function Categories({ categories, subcategories, onChange }: { categories: Category[]; subcategories: Subcategory[]; onChange: (items: Category[]) => void }) {
