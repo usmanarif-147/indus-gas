@@ -1,2 +1,4 @@
-import { EmptyState, PageTitle } from "@/components/admin-ui";
-export default function WorkingPage() { return <><PageTitle eyebrow="SALES PIPELINE" title="Daily Operations" description="Potential clients collected by the salesman before their first order." action={<button className="admin-button">+ Add working lead</button>} /><section className="filter-row"><input placeholder="Search restaurant, area, or salesman" /><button>All status ▾</button></section><EmptyState icon="◌" title="No working leads yet" text="When a salesman enters a restaurant meeting from the employee app, it will appear here." /></>; }
+import { PageTitle } from "@/components/admin-ui";
+import AdminDailyOperationsManager from "@/components/admin-daily-operations-manager";
+
+export default function WorkingPage() { return <><PageTitle eyebrow="DAILY PLANNING" title="Daily Operations" description="Plan work for drivers and sales managers, then monitor each day in one place." /><AdminDailyOperationsManager /></>; }
