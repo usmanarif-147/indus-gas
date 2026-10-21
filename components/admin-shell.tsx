@@ -6,7 +6,7 @@ import { ReactNode, useState } from "react";
 
 const menu = [
   ["/admin/dashboard", "▦", "Dashboard"],
-  ["/admin/working", "◌", "Working"],
+  ["/admin/working", "◌", "Daily Operations"],
   ["/admin/clients", "♙", "Clients"],
   ["/admin/employees", "♧", "Employees"],
   ["/admin/purchasing", "▣", "Purchasing"],
