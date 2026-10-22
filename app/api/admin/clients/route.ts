@@ -9,7 +9,11 @@ function contacts(value: unknown): Contact[] { return Array.isArray(value) ? val
 
 export async function GET() {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
-  const result = await pool.query(`SELECT c.*, COUNT(b.id)::int AS branch_count FROM clients c LEFT JOIN branches b ON b.client_id = c.id GROUP BY c.id ORDER BY c.is_active DESC, c.client_name ASC`);
+  const result = await pool.query(`SELECT c.*, COUNT(b.id)::int AS branch_count,
+    COUNT(b.id) FILTER (WHERE b.is_active = 1)::int AS active_branch_count,
+    COUNT(b.id) FILTER (WHERE b.is_active = 0)::int AS inactive_branch_count
+    FROM clients c LEFT JOIN branches b ON b.client_id = c.id
+    GROUP BY c.id ORDER BY c.is_active DESC, c.client_name ASC`);
   return NextResponse.json({ clients: result.rows });
 }
 
