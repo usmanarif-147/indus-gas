@@ -1,6 +1,6 @@
-import AdminClientDetails from "@/components/admin-client-details";
+import AdminClientProfile from "@/components/admin-client-profile";
 
 export default async function ClientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <AdminClientDetails clientId={Number(id)} />;
+  return <AdminClientProfile clientId={Number(id)} />;
 }
