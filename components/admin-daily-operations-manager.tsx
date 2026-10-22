@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "./admin-daily-operations-manager.module.css";
 import roleStyles from "./admin-daily-operations-role-picker.module.css";
+import AdminDriverTaskModal from "./admin-driver-task-modal";
 
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
@@ -46,6 +47,7 @@ export default function AdminDailyOperationsManager() {
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [rolePickerDate, setRolePickerDate] = useState<string | null>(null);
   const [planningRole, setPlanningRole] = useState<PlanningRole | null>(null);
+  const [driverTaskDate, setDriverTaskDate] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -128,19 +130,20 @@ export default function AdminDailyOperationsManager() {
       {loading ? <p className={styles.empty}>Loading tasks…</p> : selectedTasks.length === 0 ? <p className={styles.empty}>{selectedDate < today() ? "No plans were recorded for this day." : "No tasks planned. Add a task for an employee."}</p> : <div className={styles.taskList}>{selectedTasks.map((task) => <article key={task.id} className={task.status === 2 ? styles.cancelled : ""}><div className={styles.taskTop}><span className={styles["category_" + task.taskCategory]}>{categoryInfo[task.taskCategory as keyof typeof categoryInfo]?.[0] || task.taskCategory}</span><em className={styles["status" + task.status]}>{statusText[task.status]}</em></div><h3>{task.title}</h3><p><b>{task.employeeName}</b> · {task.employeeRole === "driver" ? "Driver" : "Sales manager"}{task.scheduledTime ? " · " + task.scheduledTime : ""}</p>{task.clientName && <small>{task.clientName} · {task.branchName}</small>}{task.notes && <small>{task.notes}</small>}<div className={styles.taskActions}><button onClick={() => openEdit(task)}>Edit</button><button className={styles.delete} onClick={() => setDeleting(task)}>Delete</button></div></article>)}</div>}
     </section>
     {draft && <TaskModal draft={draft} setDraft={setDraft} editing={Boolean(editing)} employees={employees} branches={branches} preview={preview} close={() => { setDraft(null); setEditing(null); setPreview(false); }} back={() => setPreview(false)} chooseCategory={chooseCategory} review={() => { if (valid()) { setError(""); setPreview(true); } else setError("Select an employee and category, then enter a task title."); }} save={save} />}
-    {rolePickerDate && <RolePicker date={rolePickerDate} role={planningRole} close={() => { setRolePickerDate(null); setPlanningRole(null); }} selectRole={setPlanningRole} />}
+    {rolePickerDate && <RolePicker date={rolePickerDate} role={planningRole} close={() => { setRolePickerDate(null); setPlanningRole(null); }} selectRole={setPlanningRole} openDriver={() => { setDriverTaskDate(rolePickerDate); setRolePickerDate(null); setPlanningRole(null); }} />}
+    {driverTaskDate && <AdminDriverTaskModal date={driverTaskDate} employees={employees} branches={branches} close={() => setDriverTaskDate(null)} saved={async () => { setNotice("Driver task created."); setDriverTaskDate(null); await load(); }} />}
     {deleting && <div className={styles.backdrop}><section className={styles.confirm}><h2>Remove task?</h2><p>This will remove “{deleting.title}” from {dateLabel(deleting.operationDate)}.</p><div><button onClick={() => setDeleting(null)}>Cancel</button><button className={styles.deleteConfirm} onClick={removeTask}>Remove task</button></div></section></div>}
   </div>;
 }
 
-function RolePicker({ date, role, close, selectRole }: { date: string; role: PlanningRole | null; close: () => void; selectRole: (role: PlanningRole | null) => void }) {
+function RolePicker({ date, role, close, selectRole, openDriver }: { date: string; role: PlanningRole | null; close: () => void; selectRole: (role: PlanningRole | null) => void; openDriver: () => void }) {
   const choices: { id: PlanningRole; title: string; detail: string; icon: string }[] = [
     { id: "driver", title: "Driver", detail: "Filling, deliveries and vehicle work", icon: "▣" },
     { id: "salesman", title: "Salesman", detail: "Leads, collection, follow-up and inspection", icon: "◌" },
     { id: "office_boy", title: "Office Boy", detail: "Office and warehouse work", icon: "♧" },
   ];
   const selected = choices.find((choice) => choice.id === role);
-  return <div className={styles.backdrop}><section className={roleStyles.roleModal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button>{!selected ? <><p className={styles.kicker}>{dateLabel(date)}</p><h2>Choose employee role</h2><p className={roleStyles.roleHint}>Select who this daily operation is for.</p><div className={roleStyles.roleCards}>{choices.map((choice) => <button key={choice.id} onClick={() => selectRole(choice.id)}><b>{choice.icon}</b><span><strong>{choice.title}</strong><small>{choice.detail}</small></span><i>→</i></button>)}</div></> : <><p className={styles.kicker}>{dateLabel(date)} · {selected.title.toUpperCase()}</p><h2>{selected.title} task</h2><div className={roleStyles.comingSoon}><b>{selected.icon}</b><h3>Coming soon</h3><p>The {selected.title.toLowerCase()} task form will be added in the next step.</p></div><div className={styles.actions}><button onClick={() => selectRole(null)}>Back</button><button onClick={close}>Close</button></div></>}</section></div>;
+  return <div className={styles.backdrop}><section className={roleStyles.roleModal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button>{!selected ? <><p className={styles.kicker}>{dateLabel(date)}</p><h2>Choose employee role</h2><p className={roleStyles.roleHint}>Select who this daily operation is for.</p><div className={roleStyles.roleCards}>{choices.map((choice) => <button key={choice.id} onClick={() => choice.id === "driver" ? openDriver() : selectRole(choice.id)}><b>{choice.icon}</b><span><strong>{choice.title}</strong><small>{choice.detail}</small></span><i>→</i></button>)}</div></> : <><p className={styles.kicker}>{dateLabel(date)} · {selected.title.toUpperCase()}</p><h2>{selected.title} task</h2><div className={roleStyles.comingSoon}><b>{selected.icon}</b><h3>Coming soon</h3><p>The {selected.title.toLowerCase()} task form will be added in the next step.</p></div><div className={styles.actions}><button onClick={() => selectRole(null)}>Back</button><button onClick={close}>Close</button></div></>}</section></div>;
 }
 
 function TaskModal({ draft, setDraft, editing, employees, branches, preview, close, back, chooseCategory, review, save }: { draft: Draft; setDraft: React.Dispatch<React.SetStateAction<Draft | null>>; editing: boolean; employees: Employee[]; branches: Branch[]; preview: boolean; close: () => void; back: () => void; chooseCategory: (value: string) => void; review: () => void; save: () => Promise<void> }) {

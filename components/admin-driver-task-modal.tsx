@@ -1,0 +1,52 @@
+"use client";
+
+import { FormEvent, useMemo, useState } from "react";
+import styles from "./admin-driver-task-modal.module.css";
+
+type Driver = { id: number; name: string; role: "driver" | "sales_manager" };
+type Branch = { id: number; branchName: string; clientName: string };
+type Kind = "filling_visit" | "cylinder_delivery" | "cylinder_collection" | "vehicle_task";
+type Draft = { assignedEmployeeId: number; taskCategory: Kind; planOrder: number; branchId: number | null; scheduledTime: string; notes: string; plantName: string; commercialFilled: number; domesticFilled: number; commercialEmpty: number; domesticEmpty: number; cashCollectionRequired: boolean; cashAmount: string; cashBeforeDelivery: boolean; inspectionRequired: boolean; inspectionNote: string };
+
+const labels: Record<Kind, string> = { filling_visit: "Filling", cylinder_delivery: "Delivery", cylinder_collection: "Empty cylinder collection", vehicle_task: "Vehicle task" };
+const blank: Draft = { assignedEmployeeId: 0, taskCategory: "filling_visit", planOrder: 1, branchId: null, scheduledTime: "", notes: "", plantName: "BBN Plant", commercialFilled: 0, domesticFilled: 0, commercialEmpty: 0, domesticEmpty: 0, cashCollectionRequired: false, cashAmount: "", cashBeforeDelivery: false, inspectionRequired: false, inspectionNote: "" };
+const dateLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value + "T12:00:00"));
+
+export default function AdminDriverTaskModal({ date, employees, branches, close, saved }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; saved: () => Promise<void> }) {
+  const [draft, setDraft] = useState<Draft>(blank);
+  const [preview, setPreview] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const drivers = employees.filter((employee) => employee.role === "driver");
+  const needsBranch = draft.taskCategory === "cylinder_delivery" || draft.taskCategory === "cylinder_collection";
+  const needsQuantity = draft.taskCategory === "filling_visit" || draft.taskCategory === "cylinder_delivery";
+  const title = useMemo(() => labels[draft.taskCategory], [draft.taskCategory]);
+  const set = (value: Partial<Draft>) => setDraft((current) => ({ ...current, ...value }));
+  function review(event: FormEvent) {
+    event.preventDefault();
+    if (!draft.assignedEmployeeId || !draft.planOrder || (needsBranch && !draft.branchId) || (draft.taskCategory === "filling_visit" && !draft.plantName.trim()) || (draft.taskCategory === "cylinder_delivery" && draft.commercialFilled + draft.domesticFilled === 0) || (draft.cashCollectionRequired && (!Number(draft.cashAmount) || Number(draft.cashAmount) < 1))) { setError("Complete the required task details."); return; }
+    setError(""); setPreview(true);
+  }
+  async function save() {
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/daily-operations/driver-tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operationDate: date, ...draft, cashAmount: Number(draft.cashAmount) }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to create driver task.");
+      await saved();
+    } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to create driver task."); setPreview(false); }
+    finally { setSaving(false); }
+  }
+  return <div className={styles.backdrop}><section className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.kicker}>{dateLabel(date)} · DRIVER PLAN</p><h2>{preview ? "Review driver task" : "Add driver task"}</h2>{error && <p className={styles.error}>{error}</p>}{!preview ? <form className={styles.form} onSubmit={review}>
+    <div className={styles.kindCards}>{(Object.keys(labels) as Kind[]).map((kind) => <button type="button" key={kind} className={draft.taskCategory === kind ? styles.selected : ""} onClick={() => set({ taskCategory: kind, branchId: kind === "filling_visit" || kind === "vehicle_task" ? null : draft.branchId })}>{labels[kind]}</button>)}</div>
+    <label>Driver<select value={draft.assignedEmployeeId || ""} onChange={(event) => set({ assignedEmployeeId: Number(event.target.value) })} required><option value="">Select driver</option>{drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.name}</option>)}</select></label><label>Plan order<input type="number" min="1" value={draft.planOrder} onChange={(event) => set({ planOrder: Number(event.target.value) })} required /></label>
+    {draft.taskCategory === "filling_visit" && <label className={styles.full}>LPG plant name<input value={draft.plantName} onChange={(event) => set({ plantName: event.target.value })} required /></label>}
+    {needsBranch && <label className={styles.full}>Client branch<select value={draft.branchId || ""} onChange={(event) => set({ branchId: Number(event.target.value) || null })} required><option value="">Select client branch</option>{branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.clientName} — {branch.branchName}</option>)}</select></label>}
+    <label>Time <small>(optional)</small><input type="time" value={draft.scheduledTime} onChange={(event) => set({ scheduledTime: event.target.value })} /></label>
+    {needsQuantity && <div className={styles.quantities}><label>45.4 kg cylinders<input type="number" min="0" value={draft.commercialFilled} onChange={(event) => set({ commercialFilled: Number(event.target.value) })} /></label><label>11.8 kg cylinders<input type="number" min="0" value={draft.domesticFilled} onChange={(event) => set({ domesticFilled: Number(event.target.value) })} /></label></div>}
+    {(draft.taskCategory === "cylinder_delivery" || draft.taskCategory === "cylinder_collection") && <div className={styles.quantities}><label>Expected 45.4 kg empty<input type="number" min="0" value={draft.commercialEmpty} onChange={(event) => set({ commercialEmpty: Number(event.target.value) })} /></label><label>Expected 11.8 kg empty<input type="number" min="0" value={draft.domesticEmpty} onChange={(event) => set({ domesticEmpty: Number(event.target.value) })} /></label></div>}
+    {draft.taskCategory === "cylinder_delivery" && <><label className={styles.check}><input type="checkbox" checked={draft.cashCollectionRequired} onChange={(event) => set({ cashCollectionRequired: event.target.checked, cashAmount: event.target.checked ? draft.cashAmount : "", cashBeforeDelivery: event.target.checked ? draft.cashBeforeDelivery : false })} /> Collect cash on delivery</label>{draft.cashCollectionRequired && <><label>Cash amount (PKR)<input type="number" min="1" value={draft.cashAmount} onChange={(event) => set({ cashAmount: event.target.value })} required /></label><label className={styles.check}><input type="checkbox" checked={draft.cashBeforeDelivery} onChange={(event) => set({ cashBeforeDelivery: event.target.checked })} /> Do not deliver until cash is received</label></>}</>}
+    {(draft.taskCategory === "cylinder_delivery" || draft.taskCategory === "cylinder_collection") && <><label className={styles.check}><input type="checkbox" checked={draft.inspectionRequired} onChange={(event) => set({ inspectionRequired: event.target.checked })} /> Inspect / count company cylinders</label>{draft.inspectionRequired && <label className={styles.full}>Inspection instruction <input value={draft.inspectionNote} onChange={(event) => set({ inspectionNote: event.target.value })} placeholder="e.g. Count all company cylinders" /></label>}</>}
+    <label className={styles.full}>Special instruction <small>(optional)</small><textarea value={draft.notes} onChange={(event) => set({ notes: event.target.value })} placeholder="e.g. Call me before delivery" /></label><div className={styles.actions}><button type="button" onClick={close}>Cancel</button><button className="admin-button" type="submit">Review task</button></div>
+  </form> : <div className={styles.preview}><div><span>Task</span><b>{title}</b></div><div><span>Driver</span><b>{drivers.find((driver) => driver.id === draft.assignedEmployeeId)?.name}</b></div><div><span>Plan order</span><b>#{draft.planOrder}</b></div>{draft.scheduledTime && <div><span>Time</span><b>{draft.scheduledTime}</b></div>}{draft.plantName && draft.taskCategory === "filling_visit" && <div><span>Plant</span><b>{draft.plantName}</b></div>}{draft.branchId && <div><span>Client branch</span><b>{branches.find((branch) => branch.id === draft.branchId)?.clientName} — {branches.find((branch) => branch.id === draft.branchId)?.branchName}</b></div>}{needsQuantity && <div><span>Filled cylinders</span><b>45.4 kg: {draft.commercialFilled} · 11.8 kg: {draft.domesticFilled}</b></div>}{(draft.commercialEmpty || draft.domesticEmpty) > 0 && <div><span>Expected empty</span><b>45.4 kg: {draft.commercialEmpty} · 11.8 kg: {draft.domesticEmpty}</b></div>}{draft.cashCollectionRequired && <div className={styles.warning}><span>Cash collection</span><b>PKR {Number(draft.cashAmount).toLocaleString("en-PK")}{draft.cashBeforeDelivery ? " · Cash before delivery" : ""}</b></div>}{draft.inspectionRequired && <div><span>Inspection</span><b>{draft.inspectionNote || "Count company cylinders"}</b></div>}{draft.notes && <div className={styles.full}><span>Instruction</span><b>{draft.notes}</b></div>}<div className={styles.actions}><button onClick={() => setPreview(false)} disabled={saving}>Back to edit</button><button className="admin-button" onClick={save} disabled={saving}>{saving ? "Saving…" : "Create task"}</button></div></div>}</section></div>;
+}
