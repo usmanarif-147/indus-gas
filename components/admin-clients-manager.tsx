@@ -6,6 +6,7 @@ import AdminClientFormModal, { ClientRecord } from "./admin-client-form-modal";
 import AdminConfirmModal from "./admin-confirm-modal";
 import styles from "./admin-clients-manager.module.css";
 import branchStatusStyles from "./admin-client-branch-status.module.css";
+import branchPopupStyles from "./admin-client-branch-popup.module.css";
 
 type ClientRow = ClientRecord & { branch_count: number; active_branch_count: number; inactive_branch_count: number };
 type Branch = { id: number; branch_code: string; branch_name: string; area: string | null; address: string | null; is_active: number; contact_person: { name: string; phone: string }[] };
@@ -42,6 +43,13 @@ export default function AdminClientsManager() {
 function ClientBranchesModal({ client, close }: { client: ClientRow; close: () => void }) {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [error, setError] = useState("");
-  useEffect(() => { fetch(`/api/admin/clients/${client.id}`).then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load branches."); setBranches(data.branches); }).catch((issue) => setError(issue instanceof Error ? issue.message : "Unable to load branches.")); }, [client.id]);
-  return <div className={styles.modalBackdrop}><section className={styles.formModal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.modalKicker}>{client.client_code}</p><h2>{client.client_name} outlets</h2><p className={styles.helper}>Active and inactive outlets linked with this parent business.</p>{error && <p className={styles.error}>{error}</p>}<div className={styles.branchList}>{branches.map((branch) => <article key={branch.id}><div><strong>{branch.branch_name}</strong><span>{branch.branch_code}{branch.area ? ` · ${branch.area}` : ""}</span><small>{branch.contact_person?.map((contact) => `${contact.name} ${contact.phone}`).join(" · ") || "No contact person"}</small></div><span className={branch.is_active ? styles.active : styles.inactive}>{branch.is_active ? "Active" : "Inactive"}</span></article>)}</div><div className={styles.modalActions}><button onClick={close}>Close</button></div></section></div>;
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
+  useEffect(() => { fetch(`/api/admin/clients/${client.id}/branches`).then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load branches."); setBranches(data.branches); }).catch((issue) => setError(issue instanceof Error ? issue.message : "Unable to load branches.")); }, [client.id]);
+  const filtered = useMemo(() => branches.filter((branch) => {
+    const matchesStatus = status === "all" || (status === "active" ? branch.is_active === 1 : branch.is_active === 0);
+    const haystack = `${branch.branch_name} ${branch.area || ""} ${branch.address || ""}`.toLowerCase();
+    return matchesStatus && haystack.includes(search.toLowerCase());
+  }), [branches, search, status]);
+  return <div className={styles.modalBackdrop}><section className={styles.formModal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.modalKicker}>{client.client_code}</p><h2>{client.client_name} outlets</h2><p className={styles.helper}>Active and inactive outlets linked with this parent business.</p>{error && <p className={styles.error}>{error}</p>}<div className={branchPopupStyles.filters}><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search outlet, area, or address" /><select value={status} onChange={(event) => setStatus(event.target.value as typeof status)}><option value="all">All statuses</option><option value="active">Active only</option><option value="inactive">Inactive only</option></select></div>{!error && branches.length === 0 ? <p className={styles.emptyInline}>Loading outlets…</p> : filtered.length === 0 ? <p className={styles.emptyInline}>No outlets match these filters.</p> : <div className={styles.branchList}>{filtered.map((branch) => <article key={branch.id}><div><strong>{branch.branch_name}</strong><span>{branch.branch_code}{branch.area ? ` · ${branch.area}` : ""}</span><small>{branch.contact_person?.map((contact) => `${contact.name} ${contact.phone}`).join(" · ") || "No contact person"}</small></div><span className={branch.is_active ? styles.active : styles.inactive}>{branch.is_active ? "Active" : "Inactive"}</span></article>)}</div>}<div className={styles.modalActions}><button onClick={close}>Close</button></div></section></div>;
 }

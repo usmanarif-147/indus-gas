@@ -7,6 +7,20 @@ function text(value: unknown) { return typeof value === "string" ? value.trim() 
 function flag(value: unknown, fallback: 0 | 1) { return value === 0 || value === 1 ? value : fallback; }
 function contacts(value: unknown): Contact[] { return Array.isArray(value) ? value.map((item) => ({ name: text(item?.name), phone: text(item?.phone) })).filter((item) => item.name || item.phone) : []; }
 
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdminApiSession()) return unauthorizedResponse();
+  const { id } = await params;
+  const clientId = Number(id);
+  if (!Number.isInteger(clientId)) return NextResponse.json({ error: "Client not found." }, { status: 404 });
+  try {
+    const result = await pool.query(`SELECT id, branch_code, branch_name, area, address, contact_person, is_active
+      FROM branches WHERE client_id=$1 ORDER BY is_active DESC, branch_name`, [clientId]);
+    return NextResponse.json({ branches: result.rows });
+  } catch (error) {
+    return databaseErrorResponse(error);
+  }
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const { id } = await params; const clientId = Number(id); const body = await request.json().catch(() => null);

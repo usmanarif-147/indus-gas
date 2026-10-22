@@ -1,0 +1,1 @@
+.filters{display:grid;grid-template-columns:1fr 145px;gap:10px;margin:16px 0}.filters input,.filters select{min-width:0;border:1px solid #393441;border-radius:7px;background:#0d0c11;color:#fff;padding:10px;font:inherit;font-size:13px}@media(max-width:650px){.filters{grid-template-columns:1fr}}
