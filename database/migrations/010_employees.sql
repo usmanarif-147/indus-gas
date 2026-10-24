@@ -30,3 +30,14 @@ CREATE INDEX IF NOT EXISTS employees_status_role_idx ON employees (status, role)
 
 COMMENT ON COLUMN employees.status IS '0 = inactive, 1 = active';
 COMMENT ON COLUMN employees.role IS 'warehouse_manager, sales_manager, or driver';
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'deliveries_assigned_driver_id_fkey'
+  ) THEN
+    ALTER TABLE deliveries
+      ADD CONSTRAINT deliveries_assigned_driver_id_fkey
+      FOREIGN KEY (assigned_driver_id) REFERENCES employees(id) ON DELETE RESTRICT;
+  END IF;
+END $$;
