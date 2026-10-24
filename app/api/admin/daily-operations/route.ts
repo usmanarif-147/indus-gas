@@ -40,7 +40,7 @@ export async function GET(request: Request) {
         WHERE o.operation_date BETWEEN $1 AND $2
         ORDER BY o.operation_date, o.plan_order, o.scheduled_time NULLS LAST, o.id`, [from, to]),
       pool.query(`SELECT id::int, full_name AS name, role FROM employees WHERE status = 1 AND role IN ('sales_manager', 'driver') ORDER BY full_name`),
-      pool.query(`SELECT b.id::int, b.branch_name AS "branchName", c.client_name AS "clientName" FROM branches b JOIN clients c ON c.id=b.client_id WHERE b.is_active=1 AND c.is_active=1 ORDER BY c.client_name,b.branch_name`),
+      pool.query(`SELECT b.id::int, b.client_id::int AS "clientId", b.branch_name AS "branchName", c.client_name AS "clientName" FROM branches b JOIN clients c ON c.id=b.client_id WHERE b.is_active=1 AND c.is_active=1 ORDER BY c.client_name,b.branch_name`),
     ]);
     return NextResponse.json({ tasks: tasks.rows, employees: employees.rows, branches: branches.rows });
   } catch (error) {

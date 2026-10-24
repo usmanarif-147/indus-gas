@@ -7,7 +7,7 @@ import AdminDriverTaskModal from "./admin-driver-task-modal";
 
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
-type Branch = { id: number; branchName: string; clientName: string };
+type Branch = { id: number; clientId: number; branchName: string; clientName: string };
 type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
 type Draft = { operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; branchId: number | null; scheduledTime: string; notes: string; status: number };
 type PlanningRole = "driver" | "salesman" | "office_boy";
