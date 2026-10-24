@@ -3,12 +3,12 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "./admin-daily-operations-manager.module.css";
 import roleStyles from "./admin-daily-operations-role-picker.module.css";
-import AdminDriverTaskModal from "./admin-driver-task-modal";
+import AdminDriverPlansModal from "./admin-driver-plans-modal";
 
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
 type Branch = { id: number; clientId: number; branchName: string; clientName: string };
-type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
+type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
 type Draft = { operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; branchId: number | null; scheduledTime: string; notes: string; status: number };
 type PlanningRole = "driver" | "salesman" | "office_boy";
 
@@ -66,6 +66,7 @@ export default function AdminDailyOperationsManager() {
   useEffect(() => { void load(); }, [month]);
 
   const selectedTasks = useMemo(() => tasks.filter((task) => task.operationDate === selectedDate), [tasks, selectedDate]);
+  const displayedTasks = useMemo(() => selectedTasks.filter((task) => !["filling_visit", "cylinder_delivery", "vehicle_task"].includes(task.taskCategory)), [selectedTasks]);
   const days = useMemo(() => {
     const year = Number(month.slice(0, 4)), monthIndex = Number(month.slice(5, 7)) - 1;
     const first = new Date(year, monthIndex, 1), offset = first.getDay(), total = new Date(year, monthIndex + 1, 0).getDate();
@@ -127,11 +128,11 @@ export default function AdminDailyOperationsManager() {
     </section>
     <section className={styles.dayPanel}>
       <div className={styles.dayHeading}><div><p>SELECTED DATE</p><h2>{dateLabel(selectedDate)}</h2></div>{selectedDate >= today() && <button onClick={openAdd}>+ Add task</button>}</div>
-      {loading ? <p className={styles.empty}>Loading tasks…</p> : selectedTasks.length === 0 ? <p className={styles.empty}>{selectedDate < today() ? "No plans were recorded for this day." : "No tasks planned. Add a task for an employee."}</p> : <div className={styles.taskList}>{selectedTasks.map((task) => <article key={task.id} className={task.status === 2 ? styles.cancelled : ""}><div className={styles.taskTop}><span className={styles["category_" + task.taskCategory]}>{categoryInfo[task.taskCategory as keyof typeof categoryInfo]?.[0] || task.taskCategory}</span><em className={styles["status" + task.status]}>{statusText[task.status]}</em></div><h3>{task.title}</h3><p><b>{task.employeeName}</b> · {task.employeeRole === "driver" ? "Driver" : "Sales manager"}{task.scheduledTime ? " · " + task.scheduledTime : ""}</p>{task.clientName && <small>{task.clientName} · {task.branchName}</small>}{task.notes && <small>{task.notes}</small>}<div className={styles.taskActions}><button onClick={() => openEdit(task)}>Edit</button><button className={styles.delete} onClick={() => setDeleting(task)}>Delete</button></div></article>)}</div>}
+      {loading ? <p className={styles.empty}>Loading tasks…</p> : displayedTasks.length === 0 ? <p className={styles.empty}>{selectedDate < today() ? "No non-driver tasks were recorded for this day." : "Driver plans are managed from the Driver option after selecting a date."}</p> : <div className={styles.taskList}>{displayedTasks.map((task) => <article key={task.id} className={task.status === 2 ? styles.cancelled : ""}><div className={styles.taskTop}><span className={styles["category_" + task.taskCategory]}>{categoryInfo[task.taskCategory as keyof typeof categoryInfo]?.[0] || task.taskCategory}</span><em className={styles["status" + task.status]}>{statusText[task.status]}</em></div><h3>{task.title}</h3><p><b>{task.employeeName}</b> · {task.employeeRole === "driver" ? "Driver" : "Sales manager"}{task.scheduledTime ? " · " + task.scheduledTime : ""}</p>{task.clientName && <small>{task.clientName} · {task.branchName}</small>}{task.notes && <small>{task.notes}</small>}<div className={styles.taskActions}><button onClick={() => openEdit(task)}>Edit</button><button className={styles.delete} onClick={() => setDeleting(task)}>Delete</button></div></article>)}</div>}
     </section>
     {draft && <TaskModal draft={draft} setDraft={setDraft} editing={Boolean(editing)} employees={employees} branches={branches} preview={preview} close={() => { setDraft(null); setEditing(null); setPreview(false); }} back={() => setPreview(false)} chooseCategory={chooseCategory} review={() => { if (valid()) { setError(""); setPreview(true); } else setError("Select an employee and category, then enter a task title."); }} save={save} />}
     {rolePickerDate && <RolePicker date={rolePickerDate} role={planningRole} close={() => { setRolePickerDate(null); setPlanningRole(null); }} selectRole={setPlanningRole} openDriver={() => { setDriverTaskDate(rolePickerDate); setRolePickerDate(null); setPlanningRole(null); }} />}
-    {driverTaskDate && <AdminDriverTaskModal date={driverTaskDate} employees={employees} branches={branches} close={() => setDriverTaskDate(null)} saved={async () => { setNotice("Driver task created."); setDriverTaskDate(null); await load(); }} />}
+    {driverTaskDate && <AdminDriverPlansModal date={driverTaskDate} employees={employees} branches={branches} tasks={tasks.filter((task) => task.operationDate === driverTaskDate)} close={() => setDriverTaskDate(null)} reload={load} />}
     {deleting && <div className={styles.backdrop}><section className={styles.confirm}><h2>Remove task?</h2><p>This will remove “{deleting.title}” from {dateLabel(deleting.operationDate)}.</p><div><button onClick={() => setDeleting(null)}>Cancel</button><button className={styles.deleteConfirm} onClick={removeTask}>Remove task</button></div></section></div>}
   </div>;
 }

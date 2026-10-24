@@ -12,11 +12,12 @@ const labels: Record<Kind, string> = { filling_visit: "Filling", cylinder_delive
 const blank: Draft = { assignedEmployeeId: 0, taskCategory: "filling_visit", planOrder: 1, branchId: null, scheduledTime: "", notes: "", plantName: "BBN Plant", commercialFilled: 0, domesticFilled: 0, commercialEmpty: "", domesticEmpty: "", cashCollectionRequired: false, cashAmount: "", cashBeforeDelivery: false, inspectionRequired: false, inspectionNote: "" };
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value + "T12:00:00"));
 
-export default function AdminDriverTaskModal({ date, employees, branches, close, saved }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; saved: () => Promise<void> }) {
-  const [draft, setDraft] = useState<Draft>(blank);
+export default function AdminDriverTaskModal({ date, employees, branches, close, saved, fixedKind }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; saved: () => Promise<void>; fixedKind?: Kind }) {
+  const [draft, setDraft] = useState<Draft>({ ...blank, taskCategory: fixedKind || blank.taskCategory });
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [clientId, setClientId] = useState<number | null>(null);
   const drivers = employees.filter((employee) => employee.role === "driver");
   const needsBranch = draft.taskCategory === "cylinder_delivery" || draft.taskCategory === "cylinder_collection";
@@ -36,12 +37,12 @@ export default function AdminDriverTaskModal({ date, employees, branches, close,
       const response = await fetch("/api/admin/daily-operations/driver-tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operationDate: date, ...draft, commercialEmpty: Number(draft.commercialEmpty || 0), domesticEmpty: Number(draft.domesticEmpty || 0), cashAmount: Number(draft.cashAmount) }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create driver task.");
-      await saved();
+      await saved(); setSuccess(true);
     } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to create driver task."); setPreview(false); }
     finally { setSaving(false); }
   }
-  return <div className={styles.backdrop}><section className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.kicker}>{dateLabel(date)} · DRIVER PLAN</p><h2>{preview ? "Review driver task" : "Add driver task"}</h2>{error && <p className={styles.error}>{error}</p>}{!preview ? <form className={styles.form} onSubmit={review}>
-    <div className={styles.kindCards}>{(Object.keys(labels) as Kind[]).map((kind) => <button type="button" key={kind} className={draft.taskCategory === kind ? styles.selected : ""} onClick={() => { if (kind === "filling_visit" || kind === "vehicle_task") { setClientId(null); set({ taskCategory: kind, branchId: null }); } else set({ taskCategory: kind }); }}>{labels[kind]}</button>)}</div>
+  return <div className={styles.backdrop}><section className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.kicker}>{dateLabel(date)} · DRIVER PLAN</p><h2>{success ? "Filling plan saved" : preview ? "Review driver task" : "Add driver task"}</h2>{error && <p className={styles.error}>{error}</p>}{success ? <div className={styles.successCard}><b>The filling plan was added successfully.</b><p>Close this form to return to the filling plan list.</p><button className="admin-button" onClick={close}>Back to filling plans</button></div> : !preview ? <form className={styles.form} onSubmit={review}>
+    {!fixedKind && <div className={styles.kindCards}>{(Object.keys(labels) as Kind[]).map((kind) => <button type="button" key={kind} className={draft.taskCategory === kind ? styles.selected : ""} onClick={() => { if (kind === "filling_visit" || kind === "vehicle_task") { setClientId(null); set({ taskCategory: kind, branchId: null }); } else set({ taskCategory: kind }); }}>{labels[kind]}</button>)}</div>}
     <label>Driver<select value={draft.assignedEmployeeId || ""} onChange={(event) => set({ assignedEmployeeId: Number(event.target.value) })} required><option value="">Select driver</option>{drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.name}</option>)}</select></label><label>Plan order<input type="number" min="1" value={draft.planOrder} onChange={(event) => set({ planOrder: Number(event.target.value) })} required /></label>
     {draft.taskCategory === "filling_visit" && <label className={styles.full}>LPG plant name<input value={draft.plantName} onChange={(event) => set({ plantName: event.target.value })} required /></label>}
     {needsBranch && <><label>Client<select value={clientId || ""} onChange={(event) => { const nextClientId = Number(event.target.value) || null; setClientId(nextClientId); set({ branchId: null }); }} required><option value="">Select client</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select></label><label>Branch<select value={draft.branchId || ""} onChange={(event) => set({ branchId: Number(event.target.value) || null })} required disabled={!clientId}><option value="">{clientId ? "Select branch" : "Select client first"}</option>{clientBranches.map((branch) => <option key={branch.id} value={branch.id}>{branch.branchName}</option>)}</select></label></>}

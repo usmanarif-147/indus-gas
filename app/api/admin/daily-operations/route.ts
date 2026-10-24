@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   try {
     const [tasks, employees, branches] = await Promise.all([
       pool.query(`SELECT o.id, o.operation_date::text AS "operationDate", o.assigned_employee_id::int AS "assignedEmployeeId",
-        o.task_category AS "taskCategory", o.title, o.branch_id::int AS "branchId",
+        o.task_category AS "taskCategory", o.title, o.plan_order::int AS "planOrder", o.branch_id::int AS "branchId",
         to_char(o.scheduled_time, 'HH24:MI') AS "scheduledTime", o.notes, o.status,
         e.full_name AS "employeeName", e.role AS "employeeRole",
         b.branch_name AS "branchName", c.client_name AS "clientName"
