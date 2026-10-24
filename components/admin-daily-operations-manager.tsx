@@ -13,7 +13,6 @@ type Draft = { operationDate: string; assignedEmployeeId: number; taskCategory: 
 type PlanningRole = "driver" | "salesman" | "office_boy";
 
 const categoryInfo = {
-  filling_visit: ["Filling visit", "Driver"],
   cylinder_delivery: ["Cylinder delivery", "Driver"],
   vehicle_task: ["Vehicle task", "Driver"],
   new_client_meeting: ["New-client meeting", "Sales manager"],
@@ -30,7 +29,7 @@ const monthLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { month: 
 const monthValue = (date: Date) => date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
 
 function blank(operationDate: string): Draft { return { operationDate, assignedEmployeeId: 0, taskCategory: "", title: "", branchId: null, scheduledTime: "", notes: "", status: 0 }; }
-function taskRole(category: string) { return ["filling_visit", "cylinder_delivery", "vehicle_task"].includes(category) ? "driver" : ["new_client_meeting", "payment_collection", "follow_up", "cylinder_inspection"].includes(category) ? "sales_manager" : null; }
+function taskRole(category: string) { return ["cylinder_delivery", "vehicle_task"].includes(category) ? "driver" : ["new_client_meeting", "payment_collection", "follow_up", "cylinder_inspection"].includes(category) ? "sales_manager" : null; }
 
 export default function AdminDailyOperationsManager() {
   const [month, setMonth] = useState(monthValue(new Date()));
@@ -132,7 +131,7 @@ export default function AdminDailyOperationsManager() {
     </section>
     {draft && <TaskModal draft={draft} setDraft={setDraft} editing={Boolean(editing)} employees={employees} branches={branches} preview={preview} close={() => { setDraft(null); setEditing(null); setPreview(false); }} back={() => setPreview(false)} chooseCategory={chooseCategory} review={() => { if (valid()) { setError(""); setPreview(true); } else setError("Select an employee and category, then enter a task title."); }} save={save} />}
     {rolePickerDate && <RolePicker date={rolePickerDate} role={planningRole} close={() => { setRolePickerDate(null); setPlanningRole(null); }} selectRole={setPlanningRole} openDriver={() => { setDriverTaskDate(rolePickerDate); setRolePickerDate(null); setPlanningRole(null); }} />}
-    {driverTaskDate && <AdminDriverPlansModal date={driverTaskDate} employees={employees} branches={branches} tasks={tasks.filter((task) => task.operationDate === driverTaskDate)} close={() => setDriverTaskDate(null)} reload={load} />}
+    {driverTaskDate && <AdminDriverPlansModal date={driverTaskDate} employees={employees} branches={branches} close={() => setDriverTaskDate(null)} reload={load} />}
     {deleting && <div className={styles.backdrop}><section className={styles.confirm}><h2>Remove task?</h2><p>This will remove “{deleting.title}” from {dateLabel(deleting.operationDate)}.</p><div><button onClick={() => setDeleting(null)}>Cancel</button><button className={styles.deleteConfirm} onClick={removeTask}>Remove task</button></div></section></div>}
   </div>;
 }

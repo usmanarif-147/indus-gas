@@ -41,3 +41,13 @@ BEGIN
       FOREIGN KEY (assigned_driver_id) REFERENCES employees(id) ON DELETE RESTRICT;
   END IF;
 END $$;
+
+DO $$
+BEGIN
+  IF to_regclass('public.plant_filling_plans') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'plant_filling_plans_assigned_driver_id_fkey') THEN
+    ALTER TABLE plant_filling_plans
+      ADD CONSTRAINT plant_filling_plans_assigned_driver_id_fkey
+      FOREIGN KEY (assigned_driver_id) REFERENCES employees(id) ON DELETE SET NULL;
+  END IF;
+END $$;

@@ -3,11 +3,17 @@ import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } f
 import { pool } from "@/lib/db";
 
 const selectEntries = `
-  SELECT id, entry_date, domestic_lpg_rate, commercial_filled_count, domestic_filled_count,
-    domestic_cylinder_bought, domestic_cylinder_purchase_count, domestic_cylinder_unit_cost,
-    commercial_filling_charge_rate, domestic_filling_charge_rate,
-    lpg_payment_status, filling_payment_status, created_at, updated_at
-  FROM plant_daily_entries`;
+  SELECT d.id, d.entry_date, d.domestic_lpg_rate,
+    COALESCE(SUM(p.commercial_cylinder_count), 0) AS commercial_filled_count,
+    COALESCE(SUM(p.domestic_cylinder_count), 0) AS domestic_filled_count,
+    (COALESCE(SUM(p.new_domestic_cylinder_count), 0) > 0) AS domestic_cylinder_bought,
+    COALESCE(SUM(p.new_domestic_cylinder_count), 0) AS domestic_cylinder_purchase_count,
+    COALESCE(MAX(p.new_domestic_cylinder_unit_cost), 0) AS domestic_cylinder_unit_cost,
+    d.commercial_filling_charge_rate, d.domestic_filling_charge_rate,
+    d.lpg_payment_status, d.filling_payment_status, d.created_at, d.updated_at
+  FROM plant_daily_entries d
+  LEFT JOIN plant_filling_plans p ON p.plant_daily_entry_id=d.id AND p.filling_status <> 2
+  GROUP BY d.id`;
 
 function date(value: unknown) {
   const text = typeof value === "string" ? value : "";
@@ -24,14 +30,9 @@ function count(value: unknown) {
 function payload(body: any) {
   const entryDate = date(body?.date);
   const domesticRate = amount(body?.domesticRate);
-  const commercialCount = count(body?.commercialCount);
-  const domesticCount = count(body?.domesticCount);
-  const domesticCylinderBought = body?.domesticCylinderBought === true;
-  const domesticCylinderPurchaseCount = domesticCylinderBought ? count(body?.domesticCylinderPurchaseCount) : 0;
-  const domesticCylinderUnitCost = domesticCylinderBought ? amount(body?.domesticCylinderUnitCost) : 0;
-  if (!entryDate || domesticRate === null || domesticRate <= 0 || commercialCount === null || domesticCount === null || domesticCylinderPurchaseCount === null || domesticCylinderUnitCost === null || (domesticCylinderBought && (domesticCylinderPurchaseCount <= 0 || domesticCylinderUnitCost <= 0))) return null;
+  if (!entryDate || domesticRate === null || domesticRate <= 0) return null;
   const paid = body?.paid === true ? 1 : 0;
-  return { entryDate, domesticRate, commercialCount, domesticCount, domesticCylinderBought, domesticCylinderPurchaseCount, domesticCylinderUnitCost, paid };
+  return { entryDate, domesticRate, paid };
 }
 function entry(row: Record<string, unknown>) {
   return {
@@ -60,7 +61,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null); const value = payload(body);
   if (!value) return NextResponse.json({ error: "Please enter a valid date, LPG rate, and cylinder quantities." }, { status: 400 });
   try {
-    const result = await pool.query(`INSERT INTO plant_daily_entries (entry_date, domestic_lpg_rate, commercial_filled_count, domestic_filled_count, domestic_cylinder_bought, domestic_cylinder_purchase_count, domestic_cylinder_unit_cost, lpg_payment_status, filling_payment_status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8) RETURNING *`, [value.entryDate, value.domesticRate, value.commercialCount, value.domesticCount, value.domesticCylinderBought, value.domesticCylinderPurchaseCount, value.domesticCylinderUnitCost, value.paid]);
-    return NextResponse.json({ entry: entry(result.rows[0]) }, { status: 201 });
+    const result = await pool.query(`INSERT INTO plant_daily_entries (entry_date, domestic_lpg_rate, lpg_payment_status, filling_payment_status) VALUES ($1, $2, $3, $3) RETURNING *`, [value.entryDate, value.domesticRate, value.paid]);
+    const created = await pool.query(`${selectEntries} HAVING d.id=$1`, [result.rows[0].id]);
+    return NextResponse.json({ entry: entry(created.rows[0]) }, { status: 201 });
   } catch (error) { return entryDatabaseError(error); }
 }

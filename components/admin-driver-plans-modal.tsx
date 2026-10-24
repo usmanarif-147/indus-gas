@@ -7,30 +7,30 @@ import AdminDriverTaskModal from "./admin-driver-task-modal";
 
 type Driver = { id: number; name: string; role: "driver" | "sales_manager" };
 type Branch = { id: number; clientId: number; branchName: string; clientName: string };
-type Filling = { id: number; taskCategory: string; title: string; assignedEmployeeId: number; employeeName: string; scheduledTime: string | null; planOrder: number; status: number };
+type Filling = { id: number; commercialCount: number; domesticCount: number; driverName: string | null; plannedTime: string | null; status: number };
 type Delivery = { id: number; deliveryNo: string; branchId: number; assignedDriverId: number; commercialCylinders: number; domesticCylinders: number; routeSequence: number | null; deliveryTime: string | null; status: number; clientName: string; branchName: string; driverName: string | null; instructions: { id: number; type: string; cashAmount: number | null; note: string | null }[] };
 type View = "menu" | "filling" | "delivery" | "add_delivery";
 
 const label = (date: string) => new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(date + "T12:00:00"));
 
-export default function AdminDriverPlansModal({ date, employees, branches, tasks, close, reload }: { date: string; employees: Driver[]; branches: Branch[]; tasks: Filling[]; close: () => void; reload: () => Promise<void> }) {
+export default function AdminDriverPlansModal({ date, employees, branches, close, reload }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; reload: () => Promise<void> }) {
   const [view, setView] = useState<View>("menu");
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [fillings, setFillings] = useState<Filling[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showFillingForm, setShowFillingForm] = useState(false);
-  const fillings = tasks.filter((task) => task.taskCategory === "filling_visit");
+  async function loadFillings() { setLoading(true); try { const response = await fetch(`/api/admin/plant-filling-plans?date=${date}`, { cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load filling plans."); setFillings(data.plans); } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to load filling plans."); } finally { setLoading(false); } }
   async function loadDeliveries() { setLoading(true); try { const response = await fetch(`/api/admin/deliveries?date=${date}`, { cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to load deliveries."); setDeliveries(data.deliveries); } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to load deliveries."); } finally { setLoading(false); } }
-  useEffect(() => { if (view === "delivery") void loadDeliveries(); }, [view]);
-  async function removeFilling(id: number) { if (!confirm("Remove this filling plan?")) return; try { const response = await fetch(`/api/admin/daily-operations/${id}`, { method: "DELETE" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to remove filling plan."); await reload(); } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to remove filling plan."); } }
+  useEffect(() => { if (view === "delivery") void loadDeliveries(); if (view === "filling") void loadFillings(); }, [view]);
   async function removeDelivery(id: number) { if (!confirm("Remove this pending delivery plan?")) return; try { const response = await fetch(`/api/admin/deliveries/${id}`, { method: "DELETE" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Unable to remove delivery."); await loadDeliveries(); await reload(); } catch (issue) { setError(issue instanceof Error ? issue.message : "Unable to remove delivery."); } }
   const heading = view === "menu" ? "Driver plan" : view === "filling" ? "Filling plans" : view === "delivery" ? "Delivery plans" : "Add delivery plan";
   return <div className={styles.backdrop}><section className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={close} aria-label="Close">×</button><p className={styles.kicker}>{label(date)} · DRIVER</p><h2>{heading}</h2>{error && <p className={styles.error}>{error}</p>}
     {view === "menu" && <div className={styles.kindCards}><button onClick={() => setView("filling")}>Filling</button><button onClick={() => setView("delivery")}>Deliveries</button><button onClick={() => setView("menu")}>Empty collection<br /><small>Coming soon</small></button><button onClick={() => setView("menu")}>Vehicle task<br /><small>Coming soon</small></button></div>}
-    {view === "filling" && <PlanList title="filling plans" empty="No filling plan for this date." add="Add filling plan" back={() => setView("menu")} onAdd={() => setShowFillingForm(true)}>{fillings.map((task) => <article className={planStyles.planItem} key={task.id}><div><b>{task.title}</b><span>{task.employeeName} · Plan #{task.planOrder}{task.scheduledTime ? ` · ${task.scheduledTime}` : ""}</span></div>{task.status === 0 && <button className={planStyles.deletePlan} onClick={() => void removeFilling(task.id)}>Remove</button>}</article>)}</PlanList>}
+    {view === "filling" && <PlanList title="filling plans" empty={loading ? "Loading…" : "No filling plan for this date."} add="Add filling plan" back={() => setView("menu")} onAdd={() => setShowFillingForm(true)}>{fillings.map((plan) => <article className={planStyles.planItem} key={plan.id}><div><b>Commercial: {plan.commercialCount} · Domestic: {plan.domesticCount}</b><span>{plan.driverName || "No driver"}{plan.plannedTime ? ` · ${plan.plannedTime}` : ""}</span></div></article>)}</PlanList>}
     {view === "delivery" && <PlanList title="delivery plans" empty={loading ? "Loading…" : "No delivery plan for this date."} add="Add delivery plan" back={() => setView("menu")} onAdd={() => setView("add_delivery")}>{deliveries.map((delivery) => <article className={planStyles.planItem} key={delivery.id}><div><b>{delivery.clientName} — {delivery.branchName}</b><span>{delivery.commercialCylinders} commercial · {delivery.domesticCylinders} domestic · {delivery.driverName || "No driver"}</span></div>{delivery.status === 0 && <button className={planStyles.deletePlan} onClick={() => void removeDelivery(delivery.id)}>Remove</button>}</article>)}</PlanList>}
     {view === "add_delivery" && <DeliveryForm date={date} employees={employees} branches={branches} cancel={() => setView("delivery")} saved={async () => { await loadDeliveries(); await reload(); }} />}
-    {showFillingForm && <AdminDriverTaskModal date={date} employees={employees} branches={branches} fixedKind="filling_visit" close={() => setShowFillingForm(false)} saved={async () => { await reload(); }} />}
+    {showFillingForm && <AdminDriverTaskModal date={date} employees={employees} branches={branches} fixedKind="filling_visit" close={() => setShowFillingForm(false)} saved={async () => { await loadFillings(); await reload(); }} />}
   </section></div>;
 }
 
