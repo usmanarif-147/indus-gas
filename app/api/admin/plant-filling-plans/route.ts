@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const entryDate = date(new URL(request.url).searchParams.get("date"));
   if (!entryDate) return NextResponse.json({ error: "Choose a valid date." }, { status: 400 });
   try {
-    const result = await pool.query(`SELECT p.id::int, p.commercial_cylinder_count::int AS "commercialCount", p.domestic_cylinder_count::int AS "domesticCount", p.planned_time::text AS "plannedTime", p.filling_status::int AS status, p.notes, e.full_name AS "driverName" FROM plant_filling_plans p LEFT JOIN employees e ON e.id=p.assigned_driver_id JOIN plant_daily_entries d ON d.id=p.plant_daily_entry_id WHERE d.entry_date=$1 ORDER BY p.planned_time NULLS LAST,p.id`, [entryDate]);
+    const result = await pool.query(`SELECT p.id::int, p.commercial_cylinder_count::int AS "commercialCount", p.domestic_cylinder_count::int AS "domesticCount", p.planned_time::text AS "plannedTime", p.filling_status::int AS status, p.notes, p.created_at AS "createdAt", e.full_name AS "driverName" FROM plant_filling_plans p LEFT JOIN employees e ON e.id=p.assigned_driver_id JOIN plant_daily_entries d ON d.id=p.plant_daily_entry_id WHERE d.entry_date=$1 ORDER BY p.planned_time NULLS LAST,p.id`, [entryDate]);
     return NextResponse.json({ plans: result.rows });
   } catch (error) { return databaseErrorResponse(error); }
 }

@@ -8,7 +8,7 @@ import AdminDriverPlansModal from "./admin-driver-plans-modal";
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
 type Branch = { id: number; clientId: number; branchName: string; clientName: string };
-type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
+type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; createdAt: string; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
 type Draft = { operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; branchId: number | null; scheduledTime: string; notes: string; status: number };
 type PlanningRole = "driver" | "salesman" | "office_boy";
 
@@ -131,7 +131,7 @@ export default function AdminDailyOperationsManager() {
     </section>
     {draft && <TaskModal draft={draft} setDraft={setDraft} editing={Boolean(editing)} employees={employees} branches={branches} preview={preview} close={() => { setDraft(null); setEditing(null); setPreview(false); }} back={() => setPreview(false)} chooseCategory={chooseCategory} review={() => { if (valid()) { setError(""); setPreview(true); } else setError("Select an employee and category, then enter a task title."); }} save={save} />}
     {rolePickerDate && <RolePicker date={rolePickerDate} role={planningRole} close={() => { setRolePickerDate(null); setPlanningRole(null); }} selectRole={setPlanningRole} openDriver={() => { setDriverTaskDate(rolePickerDate); setRolePickerDate(null); setPlanningRole(null); }} />}
-    {driverTaskDate && <AdminDriverPlansModal date={driverTaskDate} employees={employees} branches={branches} close={() => setDriverTaskDate(null)} reload={load} />}
+    {driverTaskDate && <AdminDriverPlansModal date={driverTaskDate} employees={employees} branches={branches} tasks={tasks.filter((task) => task.operationDate === driverTaskDate && task.employeeRole === "driver")} close={() => setDriverTaskDate(null)} reload={load} />}
     {deleting && <div className={styles.backdrop}><section className={styles.confirm}><h2>Remove task?</h2><p>This will remove “{deleting.title}” from {dateLabel(deleting.operationDate)}.</p><div><button onClick={() => setDeleting(null)}>Cancel</button><button className={styles.deleteConfirm} onClick={removeTask}>Remove task</button></div></section></div>}
   </div>;
 }
