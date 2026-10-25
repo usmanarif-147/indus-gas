@@ -12,8 +12,9 @@ const labels: Record<Kind, string> = { filling_visit: "Filling", cylinder_delive
 const blank: Draft = { assignedEmployeeId: 0, taskCategory: "filling_visit", planOrder: 1, branchId: null, scheduledTime: "", notes: "", plantName: "BBN Plant", commercialFilled: 0, domesticFilled: 0, newDomesticBought: false, newDomesticCount: 0, newDomesticUnitCost: 8500, commercialEmpty: "", domesticEmpty: "", cashCollectionRequired: false, cashAmount: "", cashBeforeDelivery: false, inspectionRequired: false, inspectionNote: "" };
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value + "T12:00:00"));
 
-export default function AdminDriverTaskModal({ date, employees, branches, close, saved, fixedKind }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; saved: () => Promise<void>; fixedKind?: Kind }) {
-  const [draft, setDraft] = useState<Draft>({ ...blank, taskCategory: fixedKind || blank.taskCategory });
+type FillingEdit = { id: number; assignedDriverId: number; commercialCount: number; domesticCount: number; newDomesticCount: number; newDomesticUnitCost: number; plannedTime: string | null; notes: string | null };
+export default function AdminDriverTaskModal({ date, employees, branches, close, saved, fixedKind, editingPlan }: { date: string; employees: Driver[]; branches: Branch[]; close: () => void; saved: () => Promise<void>; fixedKind?: Kind; editingPlan?: FillingEdit }) {
+  const [draft, setDraft] = useState<Draft>({ ...blank, taskCategory: fixedKind || blank.taskCategory, assignedEmployeeId: editingPlan?.assignedDriverId || 0, commercialFilled: editingPlan?.commercialCount || 0, domesticFilled: editingPlan?.domesticCount || 0, newDomesticBought: Boolean(editingPlan?.newDomesticCount), newDomesticCount: editingPlan?.newDomesticCount || 0, newDomesticUnitCost: editingPlan?.newDomesticUnitCost || 8500, scheduledTime: editingPlan?.plannedTime || "", notes: editingPlan?.notes || "" });
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -35,7 +36,7 @@ export default function AdminDriverTaskModal({ date, employees, branches, close,
     setSaving(true);
     try {
       const fillingPlan = fixedKind === "filling_visit";
-      const response = await fetch(fillingPlan ? "/api/admin/plant-filling-plans" : "/api/admin/daily-operations/driver-tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fillingPlan ? { date, driverId: draft.assignedEmployeeId, commercialCount: draft.commercialFilled, domesticCount: draft.domesticFilled, newDomesticCount: draft.newDomesticBought ? draft.newDomesticCount : 0, newDomesticUnitCost: draft.newDomesticBought ? draft.newDomesticUnitCost : 0, plannedTime: draft.scheduledTime, notes: draft.notes } : { operationDate: date, ...draft, commercialEmpty: Number(draft.commercialEmpty || 0), domesticEmpty: Number(draft.domesticEmpty || 0), cashAmount: Number(draft.cashAmount) }) });
+      const response = await fetch(fillingPlan ? editingPlan ? `/api/admin/plant-filling-plans/${editingPlan.id}` : "/api/admin/plant-filling-plans" : "/api/admin/daily-operations/driver-tasks", { method: fillingPlan && editingPlan ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fillingPlan ? { date, driverId: draft.assignedEmployeeId, commercialCount: draft.commercialFilled, domesticCount: draft.domesticFilled, newDomesticCount: draft.newDomesticBought ? draft.newDomesticCount : 0, newDomesticUnitCost: draft.newDomesticBought ? draft.newDomesticUnitCost : 0, plannedTime: draft.scheduledTime, notes: draft.notes } : { operationDate: date, ...draft, commercialEmpty: Number(draft.commercialEmpty || 0), domesticEmpty: Number(draft.domesticEmpty || 0), cashAmount: Number(draft.cashAmount) }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to create driver task.");
       await saved(); setSuccess(true);

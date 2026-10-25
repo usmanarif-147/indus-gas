@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS plant_filling_plans (
   domestic_cylinder_count INTEGER NOT NULL DEFAULT 0 CHECK (domestic_cylinder_count >= 0),
   new_domestic_cylinder_count INTEGER NOT NULL DEFAULT 0 CHECK (new_domestic_cylinder_count >= 0),
   new_domestic_cylinder_unit_cost NUMERIC(14, 2) NULL CHECK (new_domestic_cylinder_unit_cost >= 0),
+  task_sequence INTEGER NULL CHECK (task_sequence > 0),
   planned_time TIME NULL,
   completed_at TIMESTAMPTZ NULL,
   filling_status SMALLINT NOT NULL DEFAULT 0 CHECK (filling_status IN (0, 1, 2)),
@@ -85,5 +86,6 @@ BEGIN
 END $$;
 
 ALTER TABLE plant_filling_plans
+  ADD COLUMN IF NOT EXISTS task_sequence INTEGER NULL CHECK (task_sequence > 0),
   DROP COLUMN IF EXISTS filled_commercial_cylinder_count,
   DROP COLUMN IF EXISTS filled_domestic_cylinder_count;
