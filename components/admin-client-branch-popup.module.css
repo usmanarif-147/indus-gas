@@ -1,1 +1,2 @@
 .filters{display:grid;grid-template-columns:1fr 145px;gap:10px;margin:16px 0}.filters input,.filters select{min-width:0;border:1px solid #393441;border-radius:7px;background:#0d0c11;color:#fff;padding:10px;font:inherit;font-size:13px}@media(max-width:650px){.filters{grid-template-columns:1fr}}
+.activeBranch{border:1px solid #238153!important;background:#103c2c!important}.inactiveBranch{border:1px solid #9a3447!important;background:#461d29!important}.mapLink{width:max-content;color:#fff!important;font-size:12px!important;font-weight:800;text-decoration:underline}
