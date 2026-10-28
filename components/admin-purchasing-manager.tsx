@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "./admin-purchasing-manager.module.css";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 type Entry = { id: number; date: string; domesticRate: number; commercialCount: number; domesticCount: number; domesticCylinderBought: boolean; domesticCylinderPurchaseCount: number; domesticCylinderUnitCost: number; paid: boolean };
 type Draft = Omit<Entry, "id">;
@@ -9,7 +10,7 @@ const domesticKg = 11.8; const commercialKg = 45.4;
 function calculations(entry: Draft) { const perKg = entry.domesticRate / domesticKg; const commercialRate = perKg * commercialKg; const commercialCost = commercialRate * entry.commercialCount; const domesticCost = entry.domesticRate * entry.domesticCount; const domesticCylinderPurchaseCost = entry.domesticCylinderBought ? entry.domesticCylinderPurchaseCount * entry.domesticCylinderUnitCost : 0; const fillingCharges = entry.commercialCount * 10 + entry.domesticCount * 5; return { perKg, commercialRate, commercialCost, domesticCost, domesticCylinderPurchaseCost, fillingCharges, total: commercialCost + domesticCost + domesticCylinderPurchaseCost + fillingCharges }; }
 function money(value: number, fraction = 2) { return `Rs. ${new Intl.NumberFormat("en-PK", { minimumFractionDigits: fraction, maximumFractionDigits: fraction }).format(Number.isFinite(value) ? value : 0)}`; }
 function dateLabel(value: string) { return new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
-function blankDraft(): Draft { return { date: new Date().toISOString().slice(0, 10), domesticRate: 0, commercialCount: 0, domesticCount: 0, domesticCylinderBought: false, domesticCylinderPurchaseCount: 0, domesticCylinderUnitCost: 0, paid: false }; }
+function blankDraft(): Draft { return { date: pakistanDate(), domesticRate: 0, commercialCount: 0, domesticCount: 0, domesticCylinderBought: false, domesticCylinderPurchaseCount: 0, domesticCylinderUnitCost: 0, paid: false }; }
 
 export default function AdminPurchasingManager() {
   const [entries, setEntries] = useState<Entry[]>([]); const [draft, setDraft] = useState<Draft | null>(null); const [editingId, setEditingId] = useState<number | null>(null); const [preview, setPreview] = useState(false); const [notice, setNotice] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false);

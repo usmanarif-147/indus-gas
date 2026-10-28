@@ -1,4 +1,5 @@
 import { PoolClient } from "pg";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 type EmployeePayrollSource = { id: string | number; start_date: Date | string; end_date: Date | string | null; monthly_salary: string | number };
 const iso = (value: Date | string) => value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10);
@@ -17,7 +18,7 @@ export async function ensurePayrollEntry(client: PoolClient, employee: EmployeeP
   const result = await client.query("INSERT INTO payroll_entries (payroll_period_id, employee_id, monthly_salary, payable_days, daily_rate, gross_salary) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", [period.rows[0].id, employee.id, salary, payableDays, dailyRate, gross]); return Number(result.rows[0].id);
 }
 export async function payrollHistory(client: PoolClient, employee: EmployeePayrollSource) {
-  const startMonth = firstOfMonth(iso(employee.start_date)); const finalDate = employee.end_date ? iso(employee.end_date) : new Date().toISOString().slice(0, 10); const finalMonth = firstOfMonth(finalDate); for (let month = startMonth; month <= finalMonth; month = addMonths(month, 1)) await ensurePayrollEntry(client, employee, month);
+  const startMonth = firstOfMonth(iso(employee.start_date)); const finalDate = employee.end_date ? iso(employee.end_date) : pakistanDate(); const finalMonth = firstOfMonth(finalDate); for (let month = startMonth; month <= finalMonth; month = addMonths(month, 1)) await ensurePayrollEntry(client, employee, month);
   const result = await client.query(`SELECT pe.id, pp.period_month, pp.payment_due_date, pe.monthly_salary, pe.payable_days, pe.daily_rate, pe.gross_salary, pe.manual_deduction, pe.notes, COALESCE(a.total, 0) AS advance_total, COALESCE(p.total, 0) AS paid_total FROM payroll_entries pe JOIN payroll_periods pp ON pp.id = pe.payroll_period_id LEFT JOIN (SELECT payroll_period_id, SUM(amount) AS total FROM employee_advances WHERE employee_id = $1 GROUP BY payroll_period_id) a ON a.payroll_period_id = pp.id LEFT JOIN (SELECT payroll_entry_id, SUM(amount) AS total FROM payroll_payments GROUP BY payroll_entry_id) p ON p.payroll_entry_id = pe.id WHERE pe.employee_id = $1 ORDER BY pp.period_month DESC`, [employee.id]);
   return result.rows.map((row) => { const gross = Number(row.gross_salary); const advances = Number(row.advance_total); const deductions = Number(row.manual_deduction); const net = Math.max(0, gross - advances - deductions); const paid = Number(row.paid_total); return { id: Number(row.id), month: iso(row.period_month), dueDate: iso(row.payment_due_date), monthlySalary: Number(row.monthly_salary), payableDays: Number(row.payable_days), dailyRate: Number(row.daily_rate), grossSalary: gross, advances, deductions, netSalary: net, paid, balance: Math.max(0, net - paid), status: paid >= net ? "paid" : paid > 0 ? "partial" : "pending" }; });
 }

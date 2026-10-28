@@ -5,6 +5,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 type PlanType = "delivery" | "filling" | "task";
 type PlanCounts = Record<string, Record<PlanType, number>>;
@@ -33,7 +34,7 @@ export default function PlanningPage() {
   const [domestic, setDomestic] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [error, setError] = useState("");
-  const today = localDate(new Date());
+  const today = pakistanDate();
 
   const events = useMemo(() => Object.entries(counts).flatMap(([date, day]) => (Object.entries(day) as [PlanType, number][]).filter(([, count]) => count > 0).map(([type, count]) => ({ id: `${date}-${type}`, start: date, title: `${count} ${type === "delivery" ? "delivery" : type === "filling" ? "filling" : "task"}${count === 1 ? "" : "s"}`, classNames: [`calendar-${type}`] }))), [counts]);
 
