@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
+import { nextBranchCode } from "@/lib/client-codes";
 import { pool } from "@/lib/db";
 
 type Contact = { name: string; phone: string };
@@ -24,10 +25,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const { id } = await params; const clientId = Number(id); const body = await request.json().catch(() => null);
-  const branchCode = text(body?.branch_code); const branchName = text(body?.branch_name);
-  if (!Number.isInteger(clientId) || !branchCode || !branchName) return NextResponse.json({ error: "Branch code and branch name are required." }, { status: 400 });
+  const branchName = text(body?.branch_name);
+  if (!Number.isInteger(clientId) || !branchName) return NextResponse.json({ error: "Branch name is required." }, { status: 400 });
   try {
-    const result = await pool.query(`INSERT INTO branches (client_id, branch_name, branch_code, area, address, contact_person, is_active) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7) RETURNING *`, [clientId, branchName, branchCode, text(body?.area) || null, text(body?.address) || null, JSON.stringify(contacts(body?.contact_person)), flag(body?.is_active, 1)]);
-    return NextResponse.json({ branch: result.rows[0] }, { status: 201 });
+    const connection = await pool.connect();
+    try { await connection.query("BEGIN"); const branchCode = await nextBranchCode(connection, clientId); const result = await connection.query(`INSERT INTO branches (client_id, branch_name, branch_code, area, address, contact_person, is_active) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7) RETURNING *`, [clientId, branchName, branchCode, text(body?.area) || null, text(body?.address) || null, JSON.stringify(contacts(body?.contact_person)), flag(body?.is_active, 1)]); await connection.query("COMMIT"); return NextResponse.json({ branch: result.rows[0] }, { status: 201 }); } catch (error) { await connection.query("ROLLBACK"); throw error; } finally { connection.release(); }
   } catch (error) { return databaseErrorResponse(error); }
 }

@@ -18,10 +18,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const id = await idFrom(params); const body = await request.json().catch(() => null);
-  const clientCode = text(body?.client_code); const clientName = text(body?.client_name);
-  if (!Number.isInteger(id) || !clientCode || !clientName) return NextResponse.json({ error: "Client code and client name are required." }, { status: 400 });
+  const clientName = text(body?.client_name);
+  if (!Number.isInteger(id) || !clientName) return NextResponse.json({ error: "Client name is required." }, { status: 400 });
   try {
-    const result = await pool.query(`UPDATE clients SET client_code = $1, client_name = $2, is_active = $3, ntn = $4, client_type = $5, payment_method = $6, updated_at = NOW() WHERE id = $7 RETURNING *`, [clientCode, clientName, flag(body?.is_active, 0), text(body?.ntn) || null, flag(body?.client_type, 0), flag(body?.payment_method, 1), id]);
+    const result = await pool.query(`UPDATE clients SET client_name = $1, is_active = $2, ntn = $3, client_type = $4, payment_method = $5, updated_at = NOW() WHERE id = $6 RETURNING *`, [clientName, flag(body?.is_active, 0), text(body?.ntn) || null, flag(body?.client_type, 0), flag(body?.payment_method, 1), id]);
     if (!result.rows[0]) return NextResponse.json({ error: "Client not found." }, { status: 404 });
     return NextResponse.json({ client: result.rows[0] });
   } catch (error) { return databaseErrorResponse(error); }

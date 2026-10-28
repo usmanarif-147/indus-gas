@@ -11,10 +11,10 @@ async function ids(params: Promise<{ id: string; branchId: string }>) { const va
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; branchId: string }> }) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const [clientId, branchId] = await ids(params); const body = await request.json().catch(() => null);
-  const branchCode = text(body?.branch_code); const branchName = text(body?.branch_name);
-  if (!Number.isInteger(clientId) || !Number.isInteger(branchId) || !branchCode || !branchName) return NextResponse.json({ error: "Branch code and branch name are required." }, { status: 400 });
+  const branchName = text(body?.branch_name);
+  if (!Number.isInteger(clientId) || !Number.isInteger(branchId) || !branchName) return NextResponse.json({ error: "Branch name is required." }, { status: 400 });
   try {
-    const result = await pool.query(`UPDATE branches SET branch_name = $1, branch_code = $2, area = $3, address = $4, contact_person = $5::jsonb, is_active = $6, updated_at = NOW() WHERE id = $7 AND client_id = $8 RETURNING *`, [branchName, branchCode, text(body?.area) || null, text(body?.address) || null, JSON.stringify(contacts(body?.contact_person)), flag(body?.is_active, 1), branchId, clientId]);
+    const result = await pool.query(`UPDATE branches SET branch_name = $1, area = $2, address = $3, contact_person = $4::jsonb, is_active = $5, updated_at = NOW() WHERE id = $6 AND client_id = $7 RETURNING *`, [branchName, text(body?.area) || null, text(body?.address) || null, JSON.stringify(contacts(body?.contact_person)), flag(body?.is_active, 1), branchId, clientId]);
     if (!result.rows[0]) return NextResponse.json({ error: "Branch not found." }, { status: 404 });
     return NextResponse.json({ branch: result.rows[0] });
   } catch (error) { return databaseErrorResponse(error); }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
+import { nextBranchCode, nextClientCode } from "@/lib/client-codes";
 import { pool } from "@/lib/db";
 
 type Contact = { name: string; phone: string };
@@ -20,15 +21,16 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const body = await request.json().catch(() => null);
-  const clientCode = text(body?.client_code); const clientName = text(body?.client_name);
-  if (!clientCode || !clientName) return NextResponse.json({ error: "Client code and client name are required." }, { status: 400 });
+  const clientName = text(body?.client_name);
+  if (!clientName) return NextResponse.json({ error: "Client name is required." }, { status: 400 });
   const branch = body?.branch;
-  if (branch && (!text(branch.branch_code) || !text(branch.branch_name))) return NextResponse.json({ error: "Branch code and branch name are required when adding a branch." }, { status: 400 });
+  if (branch && !text(branch.branch_name)) return NextResponse.json({ error: "Branch name is required when adding a branch." }, { status: 400 });
   const connection = await pool.connect();
   try {
     await connection.query("BEGIN");
+    const clientCode = await nextClientCode(connection);
     const created = await connection.query(`INSERT INTO clients (client_code, client_name, is_active, ntn, client_type, payment_method) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`, [clientCode, clientName, flag(body?.is_active, 0), text(body?.ntn) || null, flag(body?.client_type, 0), flag(body?.payment_method, 1)]);
-    if (branch) await connection.query(`INSERT INTO branches (client_id, branch_name, branch_code, area, address, contact_person, is_active) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)`, [created.rows[0].id, text(branch.branch_name), text(branch.branch_code), text(branch.area) || null, text(branch.address) || null, JSON.stringify(contacts(branch.contact_person)), flag(branch.is_active, 1)]);
+    if (branch) { const branchCode = await nextBranchCode(connection, created.rows[0].id); await connection.query(`INSERT INTO branches (client_id, branch_name, branch_code, area, address, contact_person, is_active) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)`, [created.rows[0].id, text(branch.branch_name), branchCode, text(branch.area) || null, text(branch.address) || null, JSON.stringify(contacts(branch.contact_person)), flag(branch.is_active, 1)]); }
     await connection.query("COMMIT");
     return NextResponse.json({ client: created.rows[0] }, { status: 201 });
   } catch (error) { await connection.query("ROLLBACK"); return databaseErrorResponse(error); }
