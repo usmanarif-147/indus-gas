@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
 import { pool } from "@/lib/db";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 const categories = ["filling_visit", "cylinder_delivery", "vehicle_task", "new_client_meeting", "payment_collection", "follow_up", "cylinder_inspection", "other"] as const;
 const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
@@ -24,8 +25,9 @@ function payload(body: unknown) {
 export async function GET(request: Request) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const { searchParams } = new URL(request.url);
-  const from = date(searchParams.get("from")) || new Date().toISOString().slice(0, 8) + "01";
-  const to = date(searchParams.get("to")) || new Date().toISOString().slice(0, 10);
+  const today = pakistanDate();
+  const from = date(searchParams.get("from")) || today.slice(0, 8) + "01";
+  const to = date(searchParams.get("to")) || today;
   try {
     const [tasks, employees, branches] = await Promise.all([
       pool.query(`SELECT o.id, o.operation_date::text AS "operationDate", o.assigned_employee_id::int AS "assignedEmployeeId",
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const value = payload(await request.json().catch(() => null));
   if (!value) return NextResponse.json({ error: "Complete the required task details." }, { status: 400 });
-  if (value.operationDate < new Date().toISOString().slice(0, 10)) return NextResponse.json({ error: "A task cannot be created for a past date." }, { status: 400 });
+  if (value.operationDate < pakistanDate()) return NextResponse.json({ error: "A task cannot be created for a past date." }, { status: 400 });
   try {
     const employee = await pool.query(`SELECT role FROM employees WHERE id=$1 AND status=1`, [value.assignedEmployeeId]);
     if (!employee.rows[0] || !["sales_manager", "driver"].includes(employee.rows[0].role)) return NextResponse.json({ error: "Choose an active driver or sales manager." }, { status: 400 });

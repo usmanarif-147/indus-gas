@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
 import { pool } from "@/lib/db";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
 const date = (value: unknown) => /^\d{4}-\d{2}-\d{2}$/.test(text(value)) ? text(value) : "";
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   const deliveryTime = time(body?.deliveryTime);
   const instructions = Array.isArray(body?.instructions) ? body.instructions : [];
   if (!deliveryDate || !Number.isInteger(branchId) || !Number.isInteger(assignedDriverId) || commercial < 0 || domestic < 0 || commercial + domestic === 0 || routeSequence === -1) return NextResponse.json({ error: "Complete the required delivery details." }, { status: 400 });
+  if (deliveryDate < pakistanDate()) return NextResponse.json({ error: "A delivery cannot be created for a past date." }, { status: 400 });
   try {
     const client = await pool.connect();
     try {

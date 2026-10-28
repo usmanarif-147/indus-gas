@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
 import { pool } from "@/lib/db";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 const date = (value: unknown) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
 const time = (value: unknown) => typeof value === "string" && /^\d{2}:\d{2}$/.test(value) ? value : null;
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const entryDate = date(body?.date), driverId = Number(body?.driverId), commercial = count(body?.commercialCount), domestic = count(body?.domesticCount), newDomesticCount = count(body?.newDomesticCount ?? 0), newDomesticUnitCost = Number(body?.newDomesticUnitCost || 0), plannedTime = time(body?.plannedTime), notes = text(body?.notes) || null;
   if (!entryDate || !Number.isInteger(driverId) || commercial < 0 || domestic < 0 || commercial + domestic < 1 || newDomesticCount < 0 || (newDomesticCount > 0 && (!Number.isFinite(newDomesticUnitCost) || newDomesticUnitCost <= 0))) return NextResponse.json({ error: "Select a driver and enter valid filling details." }, { status: 400 });
+  if (entryDate < pakistanDate()) return NextResponse.json({ error: "A filling plan cannot be created for a past date." }, { status: 400 });
   try {
     const client = await pool.connect();
     try {

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 type Delivery = { id: number; clientName: string; branchName: string; area: string | null; address: string | null; requestedCommercialCylinders: number; requestedDomesticCylinders: number; status: number; routeSequence: number | null; contacts: { name?: string; phone?: string }[] | null };
 type Filling = { id: number; commercialCount: number; domesticCount: number; taskSequence: number | null; plannedTime: string | null; status: number; notes: string | null };
 type PlanTask = { type: "delivery"; task: Delivery; sequence: number | null } | { type: "filling"; task: Filling; sequence: number | null };
-const date = new Date().toISOString().slice(0, 10);
+const date = pakistanDate();
 
 export default function DeliveriesPage() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);

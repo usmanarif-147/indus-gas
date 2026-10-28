@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./admin-daily-operations-manager.module.css";
 import roleStyles from "./admin-daily-operations-role-picker.module.css";
 import AdminDriverPlansModal from "./admin-driver-plans-modal";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
@@ -11,13 +12,13 @@ type Branch = { id: number; clientId: number; branchName: string; clientName: st
 type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; createdAt: string; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
 type PlanningRole = "driver" | "salesman" | "office_boy";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => pakistanDate();
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value + "T12:00:00"));
 const monthLabel = (value: string) => new Intl.DateTimeFormat("en-PK", { month: "long", year: "numeric" }).format(new Date(value + "-01T12:00:00"));
 const monthValue = (date: Date) => date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
 
 export default function AdminDailyOperationsManager() {
-  const [month, setMonth] = useState(monthValue(new Date()));
+  const [month, setMonth] = useState(() => pakistanDate().slice(0, 7));
   const [tasks, setTasks] = useState<Task[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);

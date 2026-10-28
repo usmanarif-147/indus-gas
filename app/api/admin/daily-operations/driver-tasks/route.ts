@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { databaseErrorResponse, requireAdminApiSession, unauthorizedResponse } from "@/lib/admin-api";
 import { pool } from "@/lib/db";
+import { pakistanDate } from "@/lib/pakistan-time";
 
 const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
 const date = (value: unknown) => /^\d{4}-\d{2}-\d{2}$/.test(text(value)) ? text(value) : "";
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
   const validCategory = ["filling_visit", "cylinder_delivery", "cylinder_collection", "vehicle_task"].includes(taskCategory);
   if (!operationDate || !Number.isInteger(assignedEmployeeId) || !validCategory || !planOrder || (branchId !== null && !Number.isInteger(branchId)) || (cashCollectionRequired && (cashAmount === null || !Number.isFinite(cashAmount) || cashAmount <= 0))) return NextResponse.json({ error: "Complete the required driver task details." }, { status: 400 });
   if (taskCategory === "cylinder_delivery") return NextResponse.json({ error: "Create delivery tasks from Daily Operations → Driver → Add task → Delivery." }, { status: 400 });
-  if (operationDate < new Date().toISOString().slice(0, 10)) return NextResponse.json({ error: "A driver task cannot be created for a past date." }, { status: 400 });
+  if (operationDate < pakistanDate()) return NextResponse.json({ error: "A driver task cannot be created for a past date." }, { status: 400 });
   if (taskCategory === "filling_visit" && !plantName) return NextResponse.json({ error: "Enter the LPG plant name." }, { status: 400 });
   if (["cylinder_delivery", "cylinder_collection"].includes(taskCategory) && !branchId) return NextResponse.json({ error: "Choose the client branch." }, { status: 400 });
   if (taskCategory === "cylinder_delivery" && commercialFilled + domesticFilled <= 0) return NextResponse.json({ error: "Enter at least one cylinder to deliver." }, { status: 400 });

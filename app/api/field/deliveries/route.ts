@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { FIELD_SESSION_COOKIE, verifyFieldSession } from "@/lib/field-auth";
+import { pakistanDate } from "@/lib/pakistan-time";
 
-const date = (value: string | null) => /^\d{4}-\d{2}-\d{2}$/.test(value || "") ? value! : new Date().toISOString().slice(0, 10);
+const date = (value: string | null) => /^\d{4}-\d{2}-\d{2}$/.test(value || "") ? value! : pakistanDate();
 
 export async function GET(request: Request) {
   const session = verifyFieldSession((await cookies()).get(FIELD_SESSION_COOKIE)?.value);
