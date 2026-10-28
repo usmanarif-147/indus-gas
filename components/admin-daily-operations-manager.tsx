@@ -9,7 +9,7 @@ import { pakistanDate } from "@/lib/pakistan-time";
 type Role = "sales_manager" | "driver";
 type Employee = { id: number; name: string; role: Role };
 type Branch = { id: number; clientId: number; branchName: string; clientName: string };
-type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; createdAt: string; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
+type Task = { id: number; operationDate: string; assignedEmployeeId: number; taskCategory: string; title: string; planOrder: number; branchId: number | null; scheduledTime: string | null; notes: string | null; status: number; publishedAt: string | null; createdAt: string; employeeName: string; employeeRole: Role; branchName: string | null; clientName: string | null };
 type TaskSummary = { operationDate: string; driverCount: number; salesmanCount: number; officeBoyCount: number; totalCount: number };
 type PlanningRole = "driver" | "salesman" | "office_boy";
 

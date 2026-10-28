@@ -20,7 +20,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!driver.rows[0] || !branch.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Choose an active driver and branch." }, { status: 400 }); }
     let deliveryCount = Number(current.rows[0].delivery_count);
     if (Number(current.rows[0].branch_id) !== branchId) { await client.query("SELECT pg_advisory_xact_lock($1)", [branchId]); const next = await client.query("SELECT COALESCE(MAX(delivery_count),0)+1 AS next_count FROM deliveries WHERE branch_id=$1", [branchId]); deliveryCount = Number(next.rows[0].next_count); }
-    await client.query("UPDATE deliveries SET client_id=$1,branch_id=$2,assigned_driver_id=$3,requested_commercial_cylinders=$4,requested_domestic_cylinders=$5,delivery_count=$6,delivery_time=$7,updated_at=NOW() WHERE id=$8", [branch.rows[0].client_id, branchId, driverId, commercial, domestic, deliveryCount, deliveryTime, id]);
+    await client.query("UPDATE deliveries SET client_id=$1,branch_id=$2,assigned_driver_id=$3,requested_commercial_cylinders=$4,requested_domestic_cylinders=$5,delivery_count=$6,delivery_time=$7,published_at=NULL,updated_at=NOW() WHERE id=$8", [branch.rows[0].client_id, branchId, driverId, commercial, domestic, deliveryCount, deliveryTime, id]);
     await client.query("COMMIT"); return NextResponse.json({ ok: true });
   } catch (error) { await client.query("ROLLBACK"); return databaseErrorResponse(error); } finally { client.release(); }
 }

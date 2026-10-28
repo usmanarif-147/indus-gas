@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS daily_operations (
   scheduled_time TIME NULL,
   notes TEXT NULL,
   status SMALLINT NOT NULL DEFAULT 0,
+  published_at TIMESTAMPTZ NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT daily_operations_status_check CHECK (status IN (0, 1, 2)),
@@ -23,3 +24,4 @@ CREATE TABLE IF NOT EXISTS daily_operations (
 
 CREATE INDEX IF NOT EXISTS daily_operations_date_index ON daily_operations(operation_date);
 CREATE INDEX IF NOT EXISTS daily_operations_employee_date_index ON daily_operations(assigned_employee_id, operation_date);
+CREATE INDEX IF NOT EXISTS daily_operations_employee_published_date_index ON daily_operations(assigned_employee_id, operation_date) WHERE published_at IS NOT NULL;

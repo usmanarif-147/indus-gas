@@ -29,7 +29,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const employee = await pool.query(`SELECT role FROM employees WHERE id=$1 AND status=1`, [value.assignedEmployeeId]);
     if (!employee.rows[0] || !["sales_manager", "driver"].includes(employee.rows[0].role)) return NextResponse.json({ error: "Choose an active driver or sales manager." }, { status: 400 });
-    const result = await pool.query(`UPDATE daily_operations SET operation_date=$1, assigned_employee_id=$2, task_category=$3, title=$4, branch_id=$5, scheduled_time=$6, notes=$7, status=$8, updated_at=NOW() WHERE id=$9`, [value.operationDate, value.assignedEmployeeId, value.taskCategory, value.title, value.branchId, value.scheduledTime, value.notes, value.status, id]);
+    const result = await pool.query(`UPDATE daily_operations SET operation_date=$1, assigned_employee_id=$2, task_category=$3, title=$4, branch_id=$5, scheduled_time=$6, notes=$7, status=$8, published_at=NULL, updated_at=NOW() WHERE id=$9`, [value.operationDate, value.assignedEmployeeId, value.taskCategory, value.title, value.branchId, value.scheduledTime, value.notes, value.status, id]);
     if (!result.rowCount) return NextResponse.json({ error: "Task not found." }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch (error) {

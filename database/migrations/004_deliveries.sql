@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
   route_sequence INTEGER NULL CHECK (route_sequence > 0),
   delivery_time TIME NULL,
   status SMALLINT NOT NULL DEFAULT 0 CHECK (status IN (0, 1, 2)),
+  published_at TIMESTAMPTZ NULL,
   receiver_details JSONB NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -36,8 +37,10 @@ CREATE TABLE IF NOT EXISTS deliveries (
 
 CREATE INDEX IF NOT EXISTS deliveries_branch_date_idx ON deliveries (branch_id, delivery_date DESC);
 CREATE INDEX IF NOT EXISTS deliveries_driver_date_idx ON deliveries (assigned_driver_id, delivery_date, route_sequence);
+CREATE INDEX IF NOT EXISTS deliveries_driver_published_date_idx ON deliveries (assigned_driver_id, delivery_date, route_sequence) WHERE published_at IS NOT NULL;
 
 COMMENT ON COLUMN deliveries.status IS '0 = pending, 1 = done, 2 = cancelled';
+COMMENT ON COLUMN deliveries.published_at IS 'When this delivery plan was released to the assigned driver.';
 COMMENT ON COLUMN deliveries.route_sequence IS 'Driver route order for this delivery date, for example 1 = first stop.';
 COMMENT ON COLUMN deliveries.delivery_count IS 'Sequential supply number for this branch.';
 COMMENT ON COLUMN deliveries.commercial_cylinder_count IS 'Filled commercial cylinders delivered.';

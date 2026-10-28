@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS plant_filling_plans (
   planned_time TIME NULL,
   completed_at TIMESTAMPTZ NULL,
   filling_status SMALLINT NOT NULL DEFAULT 0 CHECK (filling_status IN (0, 1, 2)),
+  published_at TIMESTAMPTZ NULL,
   notes TEXT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -55,9 +56,12 @@ CREATE INDEX IF NOT EXISTS plant_filling_plans_daily_entry_idx
 
 CREATE INDEX IF NOT EXISTS plant_filling_plans_driver_status_idx
   ON plant_filling_plans(assigned_driver_id, filling_status);
+CREATE INDEX IF NOT EXISTS plant_filling_plans_driver_published_idx
+  ON plant_filling_plans(assigned_driver_id, published_at) WHERE published_at IS NOT NULL;
 
 COMMENT ON TABLE plant_filling_plans IS 'Each planned BBN Plant visit. Multiple plans can share one daily LPG rate.';
 COMMENT ON COLUMN plant_filling_plans.filling_status IS '0 = planned, 1 = completed, 2 = cancelled';
+COMMENT ON COLUMN plant_filling_plans.published_at IS 'When this filling plan was released to the assigned driver.';
 
 -- Convert earlier development schema safely. The parent is financial-only;
 -- cylinder quantities belong exclusively to individual filling visits.
