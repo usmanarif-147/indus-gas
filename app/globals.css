@@ -1685,3 +1685,4 @@ legend {
     grid-template-columns: 1fr;
   }
 }
+.plan-sync-status{display:flex;align-items:center;gap:8px;margin:0 0 16px;color:var(--text-muted);font-size:12px;font-weight:700}.plan-sync-dot,.plan-sync-spinner{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green)}.plan-sync-spinner{border:2px solid #b9ddcc;border-top-color:var(--green);background:transparent;animation:plan-sync-spin .8s linear infinite}@keyframes plan-sync-spin{to{transform:rotate(360deg)}}
