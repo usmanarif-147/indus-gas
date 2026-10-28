@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   const from = date(searchParams.get("from")) || today.slice(0, 8) + "01";
   const to = date(searchParams.get("to")) || today;
   try {
-    const [tasks, employees, branches] = await Promise.all([
+    const [tasks, employees, branches, summaries] = await Promise.all([
       pool.query(`SELECT o.id, o.operation_date::text AS "operationDate", o.assigned_employee_id::int AS "assignedEmployeeId",
         o.task_category AS "taskCategory", o.title, o.plan_order::int AS "planOrder", o.branch_id::int AS "branchId",
         to_char(o.scheduled_time, 'HH24:MI') AS "scheduledTime", o.notes, o.status, o.created_at AS "createdAt",
@@ -43,8 +43,27 @@ export async function GET(request: Request) {
         ORDER BY o.operation_date, o.plan_order, o.scheduled_time NULLS LAST, o.id`, [from, to]),
       pool.query(`SELECT id::int, full_name AS name, role FROM employees WHERE status = 1 AND role IN ('sales_manager', 'driver') ORDER BY full_name`),
       pool.query(`SELECT b.id::int, b.client_id::int AS "clientId", b.branch_name AS "branchName", c.client_name AS "clientName" FROM branches b JOIN clients c ON c.id=b.client_id WHERE b.is_active=1 AND c.is_active=1 ORDER BY c.client_name,b.branch_name`),
+      pool.query(`WITH task_counts AS (
+        SELECT o.operation_date AS operation_date,
+          COUNT(*) FILTER (WHERE e.role='driver' AND o.task_category NOT IN ('filling_visit','cylinder_delivery'))::int AS driver_count,
+          COUNT(*) FILTER (WHERE e.role='sales_manager')::int AS salesman_count,
+          COUNT(*) FILTER (WHERE e.role='warehouse_manager')::int AS office_boy_count
+        FROM daily_operations o JOIN employees e ON e.id=o.assigned_employee_id
+        WHERE o.operation_date BETWEEN $1 AND $2 AND o.status<>2 GROUP BY o.operation_date
+      ), delivery_counts AS (
+        SELECT delivery_date AS operation_date, COUNT(*)::int AS driver_count
+        FROM deliveries WHERE delivery_date BETWEEN $1 AND $2 AND status<>2 GROUP BY delivery_date
+      ), filling_counts AS (
+        SELECT d.entry_date AS operation_date, COUNT(*)::int AS driver_count
+        FROM plant_filling_plans p JOIN plant_daily_entries d ON d.id=p.plant_daily_entry_id
+        WHERE d.entry_date BETWEEN $1 AND $2 AND p.filling_status<>2 GROUP BY d.entry_date
+      ), combined AS (
+        SELECT operation_date, driver_count, salesman_count, office_boy_count FROM task_counts
+        UNION ALL SELECT operation_date, driver_count, 0, 0 FROM delivery_counts
+        UNION ALL SELECT operation_date, driver_count, 0, 0 FROM filling_counts
+      ) SELECT operation_date::text AS "operationDate", COALESCE(SUM(driver_count),0)::int AS "driverCount", COALESCE(SUM(salesman_count),0)::int AS "salesmanCount", COALESCE(SUM(office_boy_count),0)::int AS "officeBoyCount", COALESCE(SUM(driver_count)+SUM(salesman_count)+SUM(office_boy_count),0)::int AS "totalCount" FROM combined GROUP BY operation_date ORDER BY operation_date`, [from, to]),
     ]);
-    return NextResponse.json({ tasks: tasks.rows, employees: employees.rows, branches: branches.rows });
+    return NextResponse.json({ tasks: tasks.rows, employees: employees.rows, branches: branches.rows, summaries: summaries.rows });
   } catch (error) {
     return databaseErrorResponse(error);
   }
