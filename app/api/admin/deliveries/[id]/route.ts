@@ -4,11 +4,12 @@ import { pool } from "@/lib/db";
 
 const quantity = (value: unknown) => Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : -1;
 const time = (value: unknown) => typeof value === "string" && /^\d{2}:\d{2}$/.test(value) ? value : null;
+const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdminApiSession()) return unauthorizedResponse();
   const id = Number((await params).id); const body = await request.json().catch(() => null);
-  const branchId = Number(body?.branchId); const driverId = Number(body?.assignedDriverId); const commercial = quantity(body?.commercialCylinders); const domestic = quantity(body?.domesticCylinders); const deliveryTime = time(body?.deliveryTime);
+  const branchId = Number(body?.branchId); const driverId = Number(body?.assignedDriverId); const commercial = quantity(body?.commercialCylinders); const domestic = quantity(body?.domesticCylinders); const deliveryTime = time(body?.deliveryTime); const instructions = Array.isArray(body?.instructions) ? body.instructions : [];
   if (!Number.isInteger(id) || !Number.isInteger(branchId) || !Number.isInteger(driverId) || commercial < 0 || domestic < 0 || commercial + domestic < 1) return NextResponse.json({ error: "Complete valid delivery details." }, { status: 400 });
   const client = await pool.connect();
   try {
@@ -18,9 +19,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const driver = await client.query("SELECT id FROM employees WHERE id=$1 AND role='driver' AND status=1", [driverId]);
     const branch = await client.query("SELECT b.client_id FROM branches b JOIN clients c ON c.id=b.client_id WHERE b.id=$1 AND b.is_active=1 AND c.is_active=1", [branchId]);
     if (!driver.rows[0] || !branch.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Choose an active driver and branch." }, { status: 400 }); }
+    await client.query("SELECT pg_advisory_xact_lock($1)", [branchId]);
+    const duplicate = await client.query("SELECT id FROM deliveries WHERE branch_id=$1 AND delivery_date=(SELECT delivery_date FROM deliveries WHERE id=$2) AND status<>2 AND id<>$2 LIMIT 1", [branchId, id]);
+    if (duplicate.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "This branch already has a delivery plan for the selected date." }, { status: 400 }); }
     let deliveryCount = Number(current.rows[0].delivery_count);
-    if (Number(current.rows[0].branch_id) !== branchId) { await client.query("SELECT pg_advisory_xact_lock($1)", [branchId]); const next = await client.query("SELECT COALESCE(MAX(delivery_count),0)+1 AS next_count FROM deliveries WHERE branch_id=$1", [branchId]); deliveryCount = Number(next.rows[0].next_count); }
+    if (Number(current.rows[0].branch_id) !== branchId) { const next = await client.query("SELECT COALESCE(MAX(delivery_count),0)+1 AS next_count FROM deliveries WHERE branch_id=$1", [branchId]); deliveryCount = Number(next.rows[0].next_count); }
     await client.query("UPDATE deliveries SET client_id=$1,branch_id=$2,assigned_driver_id=$3,requested_commercial_cylinders=$4,requested_domestic_cylinders=$5,delivery_count=$6,delivery_time=$7,published_at=NULL,updated_at=NOW() WHERE id=$8", [branch.rows[0].client_id, branchId, driverId, commercial, domestic, deliveryCount, deliveryTime, id]);
+    await client.query("DELETE FROM delivery_instructions WHERE delivery_id=$1", [id]);
+    for (const item of instructions) {
+      const type = text(item?.type);
+      const cashAmount = type === "collect_cash" && Number(item?.cashAmount) > 0 ? Number(item.cashAmount) : null;
+      const note = text(item?.note) || null;
+      if (["cylinder_inspection", "collect_cash", "call_after_delivery", "cash_before_unloading", "other_note"].includes(type) && (type !== "collect_cash" || cashAmount)) await client.query("INSERT INTO delivery_instructions (delivery_id,instruction_type,cash_amount,note) VALUES ($1,$2,$3,$4)", [id, type, cashAmount, note]);
+    }
     await client.query("COMMIT"); return NextResponse.json({ ok: true });
   } catch (error) { await client.query("ROLLBACK"); return databaseErrorResponse(error); } finally { client.release(); }
 }

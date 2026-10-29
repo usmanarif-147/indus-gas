@@ -39,6 +39,8 @@ export async function POST(request: Request) {
       const branch = await client.query("SELECT b.id,b.client_id FROM branches b JOIN clients c ON c.id=b.client_id WHERE b.id=$1 AND b.is_active=1 AND c.is_active=1", [branchId]);
       if (!driver.rows[0] || !branch.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Choose an active driver and branch." }, { status: 400 }); }
       await client.query("SELECT pg_advisory_xact_lock($1)", [branchId]);
+      const existing = await client.query("SELECT id FROM deliveries WHERE branch_id=$1 AND delivery_date=$2 AND status<>2 LIMIT 1", [branchId, deliveryDate]);
+      if (existing.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "This branch already has a delivery plan for the selected date." }, { status: 400 }); }
       const count = await client.query("SELECT COALESCE(MAX(delivery_count),0)+1 AS next_count FROM deliveries WHERE branch_id=$1", [branchId]);
       const number = `DLV-${deliveryDate.replaceAll("-", "")}-${String(Date.now()).slice(-6)}`;
       const created = await client.query(`INSERT INTO deliveries (delivery_no,client_id,branch_id,assigned_driver_id,delivery_date,requested_commercial_cylinders,requested_domestic_cylinders,delivery_count,route_sequence,delivery_time) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`, [number, branch.rows[0].client_id, branchId, assignedDriverId, deliveryDate, commercial, domestic, count.rows[0].next_count, routeSequence, deliveryTime]);
