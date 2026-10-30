@@ -11,17 +11,6 @@ async function driver() {
   return session?.role === "driver" && session.employeeId ? session : null;
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await driver();
-  const id = Number((await params).id);
-  if (!session || !Number.isInteger(id)) return NextResponse.json({ error: "Delivery not found." }, { status: 404 });
-  try {
-    const result = await pool.query(`SELECT d.id::int, d.delivery_no AS "deliveryNo", d.delivery_count::int AS "deliveryCount", d.delivery_date::text AS "deliveryDate", d.requested_commercial_cylinders::int AS "requestedCommercialCylinders", d.requested_domestic_cylinders::int AS "requestedDomesticCylinders", d.commercial_cylinder_count::int AS "commercialCylinderCount", d.commercial_cylinder_collected::int AS "commercialCylinderCollected", d.commercial_cylinder_closing::int AS "commercialCylinderClosing", d.domestic_cylinder_count::int AS "domesticCylinderCount", d.domestic_cylinder_collected::int AS "domesticCylinderCollected", d.domestic_cylinder_closing::int AS "domesticCylinderClosing", COALESCE((SELECT previous.commercial_cylinder_closing FROM deliveries previous WHERE previous.branch_id=d.branch_id AND previous.status=1 AND previous.delivery_count<d.delivery_count ORDER BY previous.delivery_count DESC LIMIT 1),0)::int AS "previousCommercialClosing", COALESCE((SELECT previous.domestic_cylinder_closing FROM deliveries previous WHERE previous.branch_id=d.branch_id AND previous.status=1 AND previous.delivery_count<d.delivery_count ORDER BY previous.delivery_count DESC LIMIT 1),0)::int AS "previousDomesticClosing", d.receiver_details AS "receiverDetails", d.status, c.client_name AS "clientName", b.branch_name AS "branchName", b.area, b.address, b.contact_person AS contacts FROM deliveries d JOIN clients c ON c.id=d.client_id JOIN branches b ON b.id=d.branch_id WHERE d.id=$1 AND d.assigned_driver_id=$2 AND d.published_at IS NOT NULL`, [id, Number(session.employeeId)]);
-    if (!result.rows[0]) return NextResponse.json({ error: "Delivery not found." }, { status: 404 });
-    return NextResponse.json({ delivery: result.rows[0] });
-  } catch { return NextResponse.json({ error: "Unable to load delivery." }, { status: 500 }); }
-}
-
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await driver();
   const id = Number((await params).id);
