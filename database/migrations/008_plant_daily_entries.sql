@@ -30,7 +30,7 @@ ALTER TABLE plant_daily_entries
 CREATE TABLE IF NOT EXISTS plant_filling_plans (
   id BIGSERIAL PRIMARY KEY,
   plant_daily_entry_id BIGINT NOT NULL REFERENCES plant_daily_entries(id) ON DELETE RESTRICT,
-  assigned_driver_id BIGINT NULL,
+  assigned_employee_id BIGINT NULL,
   commercial_cylinder_count INTEGER NOT NULL DEFAULT 0 CHECK (commercial_cylinder_count >= 0),
   domestic_cylinder_count INTEGER NOT NULL DEFAULT 0 CHECK (domestic_cylinder_count >= 0),
   new_domestic_cylinder_count INTEGER NOT NULL DEFAULT 0 CHECK (new_domestic_cylinder_count >= 0),
@@ -55,9 +55,9 @@ CREATE INDEX IF NOT EXISTS plant_filling_plans_daily_entry_idx
   ON plant_filling_plans(plant_daily_entry_id, planned_time NULLS LAST);
 
 CREATE INDEX IF NOT EXISTS plant_filling_plans_driver_status_idx
-  ON plant_filling_plans(assigned_driver_id, filling_status);
+  ON plant_filling_plans(assigned_employee_id, filling_status);
 CREATE INDEX IF NOT EXISTS plant_filling_plans_driver_published_idx
-  ON plant_filling_plans(assigned_driver_id, published_at) WHERE published_at IS NOT NULL;
+  ON plant_filling_plans(assigned_employee_id, published_at) WHERE published_at IS NOT NULL;
 
 COMMENT ON TABLE plant_filling_plans IS 'Each planned BBN Plant visit. Multiple plans can share one daily LPG rate.';
 COMMENT ON COLUMN plant_filling_plans.filling_status IS '0 = planned, 1 = completed, 2 = cancelled';

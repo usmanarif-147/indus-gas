@@ -25,7 +25,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const delivery = await client.query("SELECT id,branch_id,delivery_count FROM deliveries WHERE id=$1 AND assigned_driver_id=$2 AND status=0 AND published_at IS NOT NULL FOR UPDATE", [id, Number(session.employeeId)]);
+    const delivery = await client.query("SELECT id,branch_id,delivery_count FROM deliveries WHERE id=$1 AND assigned_employee_id=$2 AND status=0 AND published_at IS NOT NULL FOR UPDATE", [id, Number(session.employeeId)]);
     if (!delivery.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Only your pending delivery can be completed." }, { status: 400 }); }
     const branchId = Number(delivery.rows[0].branch_id);
     await client.query("SELECT pg_advisory_xact_lock($1)", [branchId]);

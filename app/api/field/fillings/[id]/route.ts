@@ -15,7 +15,7 @@ export async function PATCH(_request: Request, { params }: { params: Promise<{ i
   try {
     const result = await pool.query(`UPDATE plant_filling_plans
       SET filling_status=1, completed_at=NOW(), updated_at=NOW()
-      WHERE id=$1 AND assigned_driver_id=$2 AND filling_status=0 AND published_at IS NOT NULL
+      WHERE id=$1 AND assigned_employee_id=$2 AND filling_status=0 AND published_at IS NOT NULL
       RETURNING id`, [id, Number(session.employeeId)]);
     if (!result.rowCount) return NextResponse.json({ error: "Only your published planned filling task can be completed." }, { status: 400 });
     return NextResponse.json({ ok: true });

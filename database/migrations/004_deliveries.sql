@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
   delivery_no TEXT NOT NULL UNIQUE,
   client_id BIGINT NOT NULL REFERENCES clients(id) ON DELETE RESTRICT,
   branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
-  assigned_driver_id BIGINT NULL,
+  assigned_employee_id BIGINT NULL,
   delivery_date DATE NOT NULL,
   requested_commercial_cylinders INTEGER NOT NULL DEFAULT 0 CHECK (requested_commercial_cylinders >= 0),
   requested_domestic_cylinders INTEGER NOT NULL DEFAULT 0 CHECK (requested_domestic_cylinders >= 0),
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
     requested_commercial_cylinders > 0 OR requested_domestic_cylinders > 0
   ),
   CONSTRAINT deliveries_driver_route_sequence_unique UNIQUE (
-    delivery_date, assigned_driver_id, route_sequence
+    delivery_date, assigned_employee_id, route_sequence
   ),
   CONSTRAINT deliveries_branch_delivery_count_unique UNIQUE (
     branch_id, delivery_count
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS deliveries (
 );
 
 CREATE INDEX IF NOT EXISTS deliveries_branch_date_idx ON deliveries (branch_id, delivery_date DESC);
-CREATE INDEX IF NOT EXISTS deliveries_driver_date_idx ON deliveries (assigned_driver_id, delivery_date, route_sequence);
-CREATE INDEX IF NOT EXISTS deliveries_driver_published_date_idx ON deliveries (assigned_driver_id, delivery_date, route_sequence) WHERE published_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS deliveries_driver_date_idx ON deliveries (assigned_employee_id, delivery_date, route_sequence);
+CREATE INDEX IF NOT EXISTS deliveries_driver_published_date_idx ON deliveries (assigned_employee_id, delivery_date, route_sequence) WHERE published_at IS NOT NULL;
 
 COMMENT ON COLUMN deliveries.status IS '0 = pending, 1 = done, 2 = cancelled';
 COMMENT ON COLUMN deliveries.published_at IS 'When this delivery plan was released to the assigned driver.';
